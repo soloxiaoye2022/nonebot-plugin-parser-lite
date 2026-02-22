@@ -5,8 +5,6 @@ from datetime import datetime
 from dataclasses import field, dataclass
 from collections.abc import Callable, Sequence, Coroutine
 
-from ..renders.utils import build_html
-
 
 def repr_path_task(
     path_task: Path | Task[Path] | Callable[[], Coroutine[Any, Any, Path]],
@@ -168,10 +166,6 @@ class Comment:
         """添加子评论"""
         comment.parent_author = parent or self.author
         self.replies.append(comment)
-
-    async def html_content(self) -> str:
-        """用于在jinja中获取html内容"""
-        return await build_html(self.content)
 
     @property
     def formatted_datetime(self) -> str | None:

@@ -23,8 +23,6 @@ class Config(BaseModel):
     """bilibili cookies"""
     parser_xhs_ck: str | None = None
     """小红书 cookies"""
-    parser_kugou_lzkey: str | None = None
-    """酷狗音乐API密钥"""
     parser_proxy: str | None = None
     """代理"""
     parser_need_upload: bool = False
@@ -33,14 +31,6 @@ class Config(BaseModel):
     """是否需要上传音频文件"""
     parser_need_upload_video: bool = False
     """是否需要上传视频文件"""
-    parser_send_lyrics: bool = True
-    """是否发送歌词"""
-    parser_combine_message: bool = True
-    """是否合并发送消息"""
-    parser_prefer_high_quality: bool = True
-    """是否优先使用高质量音质"""
-    parser_audio_timeout: float = 30.0
-    """音频解析超时时间，单位：秒"""
     parser_use_base64: bool = False
     """是否使用 base64 编码发送图片，音频，视频"""
     parser_max_size: int = 90
@@ -64,7 +54,7 @@ class Config(BaseModel):
     parser_bili_video_quality: VideoQuality = VideoQuality._1080P
     """B站视频清晰度"""
     parser_need_forward_contents: bool = True
-    """是否需要转发原文内容"""
+    """是否需要合并转发内容(大于四项时始终转发)"""
     parser_delay_send_media: bool = False
     """是否延迟发送视频/音频，需要用户发送特定表情或点赞特定表情后才发送"""
     parser_delay_send_emoji_ids: list[int] = [128077]
@@ -171,31 +161,6 @@ class Config(BaseModel):
     def blacklist_users(self) -> list[str]:
         """黑名单用户列表"""
         return self.parser_blacklist_users
-
-    @property
-    def send_lyrics(self) -> bool:
-        """是否发送歌词"""
-        return self.parser_send_lyrics
-
-    @property
-    def combine_message(self) -> bool:
-        """是否合并发送消息"""
-        return self.parser_combine_message
-
-    @property
-    def prefer_high_quality(self) -> bool:
-        """是否优先使用高质量音质"""
-        return self.parser_prefer_high_quality
-
-    @property
-    def audio_timeout(self) -> float:
-        """音频解析超时时间，单位：秒"""
-        return self.parser_audio_timeout
-
-    @property
-    def kugou_lzkey(self) -> str | None:
-        """酷狗音乐API密钥"""
-        return self.parser_kugou_lzkey
 
     @property
     def delay_send_media(self) -> bool:
