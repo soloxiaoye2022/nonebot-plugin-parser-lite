@@ -9,7 +9,6 @@ from .data import (
     AudioContent,
     ImageContent,
     VideoContent,
-    DynamicContent,
     GraphicsContent,
 )
 from .kuwo import KuWoParser as KuWoParser
@@ -22,7 +21,7 @@ from .taptap import TapTapParser as TapTapParser
 from .netease import NCMParser as NCMParser
 from .qsmusic import QSMusicParser as QSMusicParser
 from .toutiao import ToutiaoParser as ToutiaoParser
-from .twitter import TwitterParser as TwitterParser
+from .x import TwitterParser as TwitterParser
 from .bilibili import BilibiliParser as BilibiliParser
 from .kuaishou import KuaiShouParser as KuaiShouParser
 from .xiaohongshu import XiaoHongShuParser as XiaoHongShuParser
@@ -34,7 +33,6 @@ __all__ = [
     "BaseParser",
     "BilibiliParser",
     "DouyinParser",
-    "DynamicContent",
     "GraphicsContent",
     "ImageContent",
     "KuGouParser",

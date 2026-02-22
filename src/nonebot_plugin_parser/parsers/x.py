@@ -25,7 +25,9 @@ class VxTwitterResponse(Struct):
     likes: int
     text: str
     user_name: str
+    """用户昵称"""
     user_screen_name: str
+    """用户推特用户名"""
     user_profile_image_url: str
     qrt: "VxTwitterResponse | None" = None
     """引用推文"""
@@ -55,7 +57,9 @@ class TwitterParser(BaseParser):
         return self._collect_result(data)
 
     def _collect_result(self, data: VxTwitterResponse) -> ParseResult:
-        author = self.create_author(data.user_screen_name, data.user_profile_image_url)
+        author = self.create_author(
+            f"{data.user_name} @{data.user_screen_name}", data.user_profile_image_url
+        )
 
         contents: list[MediaContent | str] = [data.text]
 
