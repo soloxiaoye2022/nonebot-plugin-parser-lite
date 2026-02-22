@@ -97,14 +97,23 @@ parser_max_size=90
 
 # [可选] 全局禁止的解析
 # 示例 parser_disabled_platforms=["bilibili", "douyin"] 表示禁止了哔哩哔哩和抖音
-# 可选值: ["bilibili", "douyin", "kuaishou", "twitter", "acfun", "tiktok", "weibo", "xiaohongshu"]
-parser_disabled_platforms=["twitter"]
+# 可选值: ["bilibili", "douyin", "kuaishou", "x", "acfun", "weibo", "xiaohongshu"]
+parser_disabled_platforms=["x"]
 
 # [可选] 是否在解析结果中附加原始URL
 parser_append_url=False
 
 # [可选] 是否需要转发媒体内容(超过 4 项时始终使用合并转发)
 parser_need_forward_contents=True
+
+# [可选] 是否延迟发送视频/音频，需要用户发送特定表情或点赞特定表情后才发送
+parser_delay_send_media=False
+
+# [可选] 触发延迟发送视频的表情ID列表，用于监听group_msg_emoji_like事件
+parser_delay_send_emoji_ids=[128077]
+
+# [可选] 是否开启懒下载模式，仅在用户请求时才下载视频
+parser_delay_send_lazy_download=False
 ```
 
 </details>

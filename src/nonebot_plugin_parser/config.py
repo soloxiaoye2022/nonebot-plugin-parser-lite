@@ -67,9 +67,7 @@ class Config(BaseModel):
     """是否需要转发原文内容"""
     parser_delay_send_media: bool = False
     """是否延迟发送视频/音频，需要用户发送特定表情或点赞特定表情后才发送"""
-    parser_delay_send_emoji: str = "👍"
-    """触发延迟发送视频的表情"""
-    parser_delay_send_emoji_ids: list[int] = []
+    parser_delay_send_emoji_ids: list[int] = [128077]
     """触发延迟发送视频的表情ID列表，用于监听group_msg_emoji_like事件"""
     parser_delay_send_lazy_download: bool = False
     """是否开启懒下载模式，仅在用户请求时才下载视频"""
