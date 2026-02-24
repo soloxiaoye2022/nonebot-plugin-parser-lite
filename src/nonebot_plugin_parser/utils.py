@@ -209,5 +209,5 @@ def generate_file_name(url: str, default_suffix: str = "") -> str:
 def format_num(num: int | None) -> str:
     """将数字格式化为 1.2万 的形式"""
     if num is None:
-        return "0"
+        return "-"
     return str(num) if num < 10000 else f"{num / 10000:.1f}万"
