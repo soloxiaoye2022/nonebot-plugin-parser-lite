@@ -38,7 +38,7 @@ class PlatformEnum(str, Enum):
     NETEASE = "netease"
     NGA = "nga"
     TIKTOK = "tiktok"
-    X = "twitter"
+    X = "X"
     WEIBO = "weibo"
     XIAOHONGSHU = "xiaohongshu"
     TAPTAP = "taptap"
