@@ -24,7 +24,7 @@ from .data import (
     Comment,
     Stats,
 )
-from .funcs import (
+from .creator import (
     create_author,
     create_audio,
     create_comment,
@@ -418,7 +418,7 @@ class BaseParser:
         author: Author,
         content: Sequence[MediaContent | str | None],
         timestamp: int | None = None,
-        state: Stats | None = None,
+        stats: Stats | None = None,
         location: str | None = None,
         replies: list[Comment] | None = None,
         parent_author: Author | None = None,
@@ -429,7 +429,7 @@ class BaseParser:
         :param author: 评论作者
         :param content: 评论内容
         :param timestamp: 评论时间戳
-        :param state: 评论统计信息
+        :param stats: 评论统计信息
         :param location: 评论位置
         :param replies: 评论回复
         :param parent_author: 评论的父级作者
@@ -439,7 +439,7 @@ class BaseParser:
             author=author,
             content=content,
             timestamp=timestamp,
-            stats=state,
+            stats=stats,
             location=location,
             replies=replies,
             parent_author=parent_author,

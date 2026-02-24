@@ -17,7 +17,7 @@ from .models import (
     FragImage,
     FragVideo,
 )
-from ..funcs import (
+from ..creator import (
     create_graphic,
     create_stats,
     create_video,

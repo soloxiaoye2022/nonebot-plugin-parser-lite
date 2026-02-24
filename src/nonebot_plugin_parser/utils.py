@@ -1,13 +1,13 @@
 import re
 import asyncio
 import hashlib
-import importlib.util
-from typing import Any, TypeVar
+from typing import TypeVar
 from pathlib import Path
 from collections import OrderedDict
 from urllib.parse import urlparse
 
 from nonebot import logger
+
 
 K = TypeVar("K")
 V = TypeVar("V")
@@ -206,25 +206,8 @@ def generate_file_name(url: str, default_suffix: str = "") -> str:
     return f"{url_hash}{suffix}"
 
 
-def write_json_to_data(data: dict[str, Any] | str, file_name: str):
-    """将数据写入数据目录
-
-    Args:
-        data (dict[str, Any] | str): 数据
-        file_name (str): 文件名
-    """
-    import json
-
-    from .config import pconfig
-
-    path = pconfig.data_dir / file_name
-    if isinstance(data, str):
-        data = json.loads(data)
-    with open(path, "w") as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
-    logger.success(f"数据写入 {path} 成功")
-
-
-def is_module_available(module_name: str) -> bool:
-    """检查模块是否可用"""
-    return importlib.util.find_spec(module_name) is not None
+def format_num(num: int | None) -> str:
+    """将数字格式化为 1.2万 的形式"""
+    if num is None:
+        return "0"
+    return str(num) if num < 10000 else f"{num / 10000:.1f}万"

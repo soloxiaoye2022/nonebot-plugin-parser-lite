@@ -40,6 +40,7 @@ from .video import VideoInfo, AIConclusion
 from ..cookie import ck2dict
 from .dynamic import DynamicData, DynamicInfo
 from .favlist import FavData
+from ...utils import format_num
 
 # 选择客户端
 select_client("curl_cffi")
@@ -58,12 +59,6 @@ class BilibiliParser(BaseParser):
         self.headers = HEADERS.copy()
         self._credential: Credential | None = None
         self._cookies_file = pconfig.config_dir / "bilibili_cookies.json"
-
-    def _format_stat(self, num: int | None) -> str:
-        """将数字格式化为 1.2万 的形式"""
-        if num is None:
-            return "0"
-        return str(num) if num < 10000 else f"{num / 10000:.1f}万"
 
     @handle("b23.tv", r"b23\.tv/[A-Za-z\d\._?%&+\-=/#]+")
     @handle("bili2233", r"bili2233\.cn/[A-Za-z\d\._?%&+\-=/#]+")
@@ -227,14 +222,14 @@ class BilibiliParser(BaseParser):
         stats = self.create_stats()
         try:
             if video_info.stat:
-                stats.view_count = self._format_stat(video_info.stat.view)
-                stats.like_count = self._format_stat(video_info.stat.like)
-                stats.collect_count = self._format_stat(video_info.stat.favorite)
-                stats.share_count = self._format_stat(video_info.stat.share)
-                stats.comment_count = self._format_stat(video_info.stat.reply)
+                stats.view_count = format_num(video_info.stat.view)
+                stats.like_count = format_num(video_info.stat.like)
+                stats.collect_count = format_num(video_info.stat.favorite)
+                stats.share_count = format_num(video_info.stat.share)
+                stats.comment_count = format_num(video_info.stat.reply)
                 stats.extra = {
-                    "danmaku": self._format_stat(video_info.stat.danmaku),
-                    "coin": self._format_stat(video_info.stat.coin),
+                    "danmaku": format_num(video_info.stat.danmaku),
+                    "coin": format_num(video_info.stat.coin),
                 }
                 logger.debug(f"[BiliParser] 视频统计数据: {stats}")
         except Exception as e:
@@ -366,16 +361,14 @@ class BilibiliParser(BaseParser):
         with contextlib.suppress(Exception):
             if dynamic_info.modules.module_stat:
                 m_stat = dynamic_info.modules.module_stat
-                stats.like_count = self._format_stat(
-                    m_stat.get("like", {}).get("count", 0)
-                )
-                stats.comment_count = self._format_stat(
+                stats.like_count = format_num(m_stat.get("like", {}).get("count", 0))
+                stats.comment_count = format_num(
                     m_stat.get("comment", {}).get("count", 0)
                 )
-                stats.share_count = self._format_stat(
+                stats.share_count = format_num(
                     m_stat.get("forward", {}).get("count", 0)
                 )
-                stats.collect_count = self._format_stat(
+                stats.collect_count = format_num(
                     m_stat.get("favorite", {}).get("count", 0)
                 )
             modules = dynamic_info.modules
@@ -604,16 +597,16 @@ class BilibiliParser(BaseParser):
                 for module in opus_data.item.modules:
                     if module.module_type == "MODULE_TYPE_STAT" and module.module_stat:
                         st = module.module_stat
-                        stats.like_count = self._format_stat(
+                        stats.like_count = format_num(
                             st.get("like", {}).get("count", 0)
                         )
-                        stats.comment_count = self._format_stat(
+                        stats.comment_count = format_num(
                             st.get("comment", {}).get("count", 0)
                         )
-                        stats.share_count = self._format_stat(
+                        stats.share_count = format_num(
                             st.get("forward", {}).get("count", 0)
                         )
-                        stats.collect_count = self._format_stat(
+                        stats.collect_count = format_num(
                             st.get("favorite", {}).get("count", 0)
                         )
                     # 检查是否有浏览量字段
@@ -1067,7 +1060,7 @@ class BilibiliParser(BaseParser):
                 ),
                 content=processed_content,
                 timestamp=raw.get("ctime", 0),
-                state=self.create_stats(like_count=raw.get("like", 0)),
+                stats=self.create_stats(like_count=raw.get("like", 0)),
                 location=reply_control.get("location"),
                 parent_author=parent_author,
             )

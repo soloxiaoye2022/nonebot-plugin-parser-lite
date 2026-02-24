@@ -12,6 +12,8 @@ from ..base import (
     ParseException,
     handle,
 )
+from .video import decoder
+from ...utils import format_num
 
 
 class DouyinParser(BaseParser):
@@ -39,9 +41,6 @@ class DouyinParser(BaseParser):
     )
     async def _parse_douyin(self, searched: re.Match[str]):
         ty, vid = searched.group("ty"), searched.group("vid")
-        if ty == "slides":
-            return await self.parse_slides(vid)
-
         for url in (
             self._build_m_douyin_url(ty, vid),
             self._build_iesdouyin_url(ty, vid),
@@ -62,8 +61,6 @@ class DouyinParser(BaseParser):
         return f"https://m.douyin.com/share/{ty}/{vid}"
 
     async def parse_video(self, url: str):
-        from . import video
-
         async with AsyncClient(
             headers=self.ios_headers,
             timeout=COMMON_TIMEOUT,
@@ -84,7 +81,8 @@ class DouyinParser(BaseParser):
         if not matched or not matched[1]:
             raise ParseException("can't find _ROUTER_DATA in html")
 
-        video_data = video.decoder.decode(matched[1].strip()).video_data
+        data = decoder.decode(matched[1].strip())
+        video_data = data.video_data
         # 使用新的简洁构建方式
         contents = []
 
@@ -98,49 +96,38 @@ class DouyinParser(BaseParser):
             duration = video_data.video.duration if video_data.video else 0
             contents.append(self.create_video(video_url, cover_url, duration))
 
+        stats = video_data.statistics
+
         # 构建作者
         author = self.create_author(
-            name=video_data.author.nickname, avatar_url=video_data.avatar_url
+            name=video_data.author.nickname, avatar_url=video_data.author.avatar_url
         )
-
+        comments = [
+            self.create_comment(
+                author=self.create_author(
+                    name=comment.user.nickname, avatar_url=comment.user.avatar_url
+                ),
+                content=[comment.text],
+                timestamp=comment.createTime,
+                stats=self.create_stats(
+                    like_count=format_num(comment.digg_count),
+                    comment_count=format_num(comment.reply_comment_total),
+                ),
+                location=comment.ip_label,
+            )
+            for comment in data.comment_list.comments
+        ]
         return self.result(
             title=video_data.desc,
             author=author,
             content=contents,
+            stats=self.create_stats(
+                view_count=format_num(stats.play_count),
+                like_count=format_num(stats.digg_count),
+                comment_count=format_num(stats.comment_count),
+                share_count=format_num(stats.share_count),
+                collect_count=format_num(stats.collect_count),
+            ),
             timestamp=video_data.create_time,
-        )
-
-    async def parse_slides(self, video_id: str):
-        from . import slides
-
-        url = "https://www.iesdouyin.com/web/api/v2/aweme/slidesinfo/"
-        params = {
-            "aweme_ids": f"[{video_id}]",
-            "request_source": "200",
-        }
-        async with AsyncClient(headers=self.android_headers, verify=False) as client:
-            response = await client.get(url, params=params)
-            response.raise_for_status()
-
-        slides_data = slides.decoder.decode(response.content).aweme_details[0]
-        contents = []
-
-        # 添加图片内容
-        if image_urls := slides_data.image_urls:
-            contents.extend(self.create_images(image_urls))
-
-        # 添加动态内容
-        if dynamic_urls := slides_data.dynamic_urls:
-            contents.extend(self.create_videos(dynamic_urls))
-
-        # 构建作者
-        author = self.create_author(
-            name=slides_data.name, avatar_url=slides_data.avatar_url
-        )
-
-        return self.result(
-            title=slides_data.desc,
-            author=author,
-            content=contents,
-            timestamp=slides_data.create_time,
+            comments=comments,
         )

@@ -65,7 +65,6 @@ def create_video(
     # 清理文件名，只保留安全字符
     if video_name:
         # 保留文件名中的后缀
-
         base_name, ext = os.path.splitext(video_name)
         cleaned_base = keep_zh_en_num(base_name)
         video_name = f"{cleaned_base}{ext}"
