@@ -1,8 +1,6 @@
 from pathlib import Path
 from typing import Any
-
 from markupsafe import escape
-
 from ..parsers.data import (
     ImageContent,
     MediaContent,
@@ -97,12 +95,13 @@ async def build_html(
             )
 
             if isinstance(cont, str):
+                text = escape(cont)
                 # 第一个文本一定使用 span，之后只要前后任意一侧是贴纸就用 span；否则用 p
                 is_first_text = not first_text_seen
                 if is_first_text or prev_is_sticker or next_is_sticker:
-                    html_parts.append(f'<span class="text">{cont}</span>')
+                    html_parts.append(f'<span class="text">{text}</span>')
                 else:
-                    html_parts.append(f'<p class="text">{cont}</p>')
+                    html_parts.append(f'<p class="text">{text}</p>')
                 first_text_seen = True
 
             elif isinstance(cont, GraphicContent):
@@ -134,7 +133,7 @@ async def build_html(
 def build_plain_text(content: list[MediaContent | str | None]) -> str:
     """构建纯文本内容"""
 
-    return "".join("\n" + escape(c) for c in content if isinstance(c, str) and c)
+    return "".join(f"\n{c}" for c in content if isinstance(c, str) and c)
 
 
 async def build_comments(comment_list: list[Comment]) -> list[dict[str, Any]]:

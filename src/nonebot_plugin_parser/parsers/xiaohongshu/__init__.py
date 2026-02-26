@@ -81,7 +81,7 @@ class XiaoHongShuParser(BaseParser):
 
     async def _fetch_initial_state(self, url: str) -> exploreInitialState:
         """
-        mode: "explore" | "discovery"
+        mode: "explore"
         """
         response = await self.session.get(url)
         # may be 302

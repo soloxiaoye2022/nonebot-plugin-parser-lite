@@ -5,7 +5,7 @@ from typing import Any, ClassVar
 from pathlib import Path
 from collections.abc import AsyncGenerator
 
-import qrcode  # pyright: ignore[reportMissingModuleSource]
+import qrcode
 from nonebot import logger
 
 from .utils import build_html, build_plain_text, build_comments
@@ -247,22 +247,22 @@ class Renderer:
                 if (self.templates_dir / file_name).exists():
                     template_name = file_name
 
-        # from jinja2 import FileSystemLoader, Environment
+        from jinja2 import FileSystemLoader, Environment
 
-        # # 创建一个包加载器对象
-        # env = Environment(loader=FileSystemLoader(self.templates_dir))
-        # template = env.get_template(template_name)
-        # # 渲染
-        # with open(f"{self.templates_dir.parent.parent}/{datetime.datetime.now().strftime('%Y-%m-%d-%H%M%S')}.html", "w", encoding="utf8") as f:  # noqa: E501
-        #     f.write(
-        #         template.render(
-        #             **{
-        #                 "result": template_data,
-        #                 "rendering_time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        #                 "bot_name": _nickname,
-        #             }
-        #         )
-        #     )
+        # 创建一个包加载器对象
+        env = Environment(loader=FileSystemLoader(self.templates_dir))
+        template = env.get_template(template_name)
+        # 渲染
+        with open(f"{self.templates_dir.parent.parent}/{datetime.datetime.now().strftime('%Y-%m-%d-%H%M%S')}.html", "w", encoding="utf8") as f:  # noqa: E501
+            f.write(
+                template.render(
+                    **{
+                        "result": template_data,
+                        "rendering_time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "bot_name": _nickname,
+                    }
+                )
+            )
 
         return await template_to_pic(
             template_path=str(self.templates_dir),

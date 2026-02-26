@@ -25,6 +25,7 @@ from .x import TwitterParser as TwitterParser
 from .bilibili import BilibiliParser as BilibiliParser
 from .kuaishou import KuaiShouParser as KuaiShouParser
 from .xiaohongshu import XiaoHongShuParser as XiaoHongShuParser
+from .zhihu import ZhiHuParser as ZhiHuParser
 
 __all__ = [
     "AcfunParser",
@@ -50,5 +51,6 @@ __all__ = [
     "VideoContent",
     "WeiBoParser",
     "XiaoHongShuParser",
+    "ZhiHuParser",
     "handle",
 ]
