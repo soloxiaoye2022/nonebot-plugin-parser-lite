@@ -11,6 +11,7 @@ require("nonebot_plugin_apscheduler")
 require("nonebot_plugin_localstore")
 
 from .utils import safe_unlink
+from . browser import BROWSER
 from .config import Config, pconfig
 from .matchers import clear_result_cache
 from nonebot_plugin_apscheduler import scheduler
@@ -51,3 +52,5 @@ async def clean_plugin_cache():
 
     # 资源清理完毕后，清理 result 缓存
     clear_result_cache()
+    # 定时重启浏览器防止长时间连接造成卡顿
+    BROWSER.reconnect()
