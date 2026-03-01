@@ -32,7 +32,7 @@ class XiaoHeiHeParser(BaseParser):
         )
         tab = BROWSER.new_tab(url="https://www.xiaoheihe.cn/")
         self.x_xhh_tokenid = tab.run_js("window.SMSdk.getDeviceId()", as_expr=True)
-        logger.info(f"成功获取到小黑盒tokenid: {self.x_xhh_tokenid}")
+        logger.info(f"成功获取到小黑盒tokenid: {self.x_xhh_tokenid[:5]}...")
         tab.close()
 
     @handle(
