@@ -15,7 +15,7 @@ class User(Struct):
 
     @property
     def avatar_url(self) -> str:
-        return self.avatar + "\\"
+        return self.avatar
 
 
 class Img(Struct):
