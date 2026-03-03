@@ -2,7 +2,7 @@ import re
 from typing import ClassVar
 
 
-from ...utils import format_num
+from ...utils.common import format_num
 
 from .answer import decoder as answerDecoder
 from ..base import (
@@ -13,7 +13,7 @@ from ..base import (
     ParseException,
     MediaContent,
 )
-from ...browser import BROWSER
+from ...utils.browser import BROWSER
 from bs4 import BeautifulSoup
 from bs4.element import Tag, NavigableString
 

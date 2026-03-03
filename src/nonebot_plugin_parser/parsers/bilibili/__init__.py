@@ -44,7 +44,7 @@ from .video import VideoInfo, AIConclusion
 from ..cookie import ck2dict
 from .dynamic import DynamicData, DynamicInfo
 from .favlist import FavData
-from ...utils import format_num
+from ...utils.common import format_num
 
 # 选择客户端
 select_client("curl_cffi")

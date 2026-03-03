@@ -2,7 +2,7 @@ from typing import ClassVar
 
 from msgspec import convert
 
-from ...utils import format_num
+from ...utils.common import format_num
 
 from .model import BaseResult
 
@@ -12,7 +12,7 @@ from ..base import BaseParser, handle, Platform, PlatformEnum, ParseException, C
 from re import Match
 from httpx import AsyncClient
 from nonebot.log import logger
-from ...browser import BROWSER
+from ...utils.browser import BROWSER
 
 
 class HeyBoxParser(BaseParser):

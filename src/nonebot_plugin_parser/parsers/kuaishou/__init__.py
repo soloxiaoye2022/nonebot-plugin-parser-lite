@@ -14,8 +14,8 @@ from ..base import (
 )
 from .decode import decode_init_state
 from .states import Data, CommentList
-from ...utils import format_num
-from ...browser import BROWSER
+from ...utils.common import format_num
+from ...utils.browser import BROWSER
 
 _STICKER_PATTERN = re.compile(r"\[(?P<name>[^]]+)\]")
 

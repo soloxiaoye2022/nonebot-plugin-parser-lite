@@ -7,7 +7,7 @@ from nonebot_plugin_alconna import Args, Match, Alconna, on_alconna
 from nonebot.adapters.onebot.v11 import NoticeEvent
 
 from .rule import SUPER_PRIVATE, Searched, SearchResult, on_keyword_regex
-from ..utils import LimitedSizeDict
+from ..utils.common import LimitedSizeDict
 from ..config import pconfig
 from ..helper import UniHelper, UniMessage
 from ..parsers import BaseParser, ParseResult, BilibiliParser
@@ -16,7 +16,7 @@ from ..download import DOWNLOADER
 from ..parsers.data import AudioContent, VideoContent
 from nonebot import on_notice
 from nonebot_plugin_alconna.uniseg import message_reaction
-from ..browser import BROWSER
+from ..utils.browser import BROWSER
 
 
 def _get_enabled_parser_classes() -> list[type[BaseParser]]:

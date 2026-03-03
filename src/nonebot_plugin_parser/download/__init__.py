@@ -16,7 +16,7 @@ from rich.progress import (
 )
 
 from .task import auto_task
-from ..utils import merge_av, safe_unlink, generate_file_name
+from ..utils.common import merge_av, safe_unlink, generate_file_name
 from ..config import pconfig
 from ..constants import COMMON_HEADER, DOWNLOAD_TIMEOUT
 from ..exception import DownloadException, ZeroSizeException, SizeLimitException

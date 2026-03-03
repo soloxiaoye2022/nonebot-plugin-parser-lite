@@ -14,7 +14,7 @@ from .data import (
     VideoContent,
     StickerContent,
 )
-from ..utils import keep_zh_en_num
+from ..utils.common import keep_zh_en_num
 from ..config import pconfig as pconfig
 from ..download import DOWNLOADER
 from ..download.task import DownloadTaskWrapper

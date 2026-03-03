@@ -4,7 +4,7 @@ from typing import ClassVar
 from httpx import AsyncClient
 
 
-from ...utils import format_num
+from ...utils.common import format_num
 
 from .model import AtlasData, BlogData, CommentData
 

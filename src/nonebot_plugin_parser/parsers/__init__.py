@@ -1,4 +1,4 @@
-from .base import BaseParser as BaseParser
+from .base import BaseParser
 from .base import handle
 from .data import (
     Author,
@@ -9,23 +9,23 @@ from .data import (
     VideoContent,
     GraphicContent,
 )
-from .kuwo import KuWoParser as KuWoParser
-from .acfun import AcfunParser as AcfunParser
-from .kugou import KuGouParser as KuGouParser
-from .tieba import TiebaParser as TiebaParser
-from .weibo import WeiBoParser as WeiBoParser
-from .douyin import DouyinParser as DouyinParser
-from .taptap import TapTapParser as TapTapParser
-from .netease import NCMParser as NCMParser
-from .qsmusic import QSMusicParser as QSMusicParser
-from .toutiao import ToutiaoParser as ToutiaoParser
-from .x import TwitterParser as TwitterParser
-from .bilibili import BilibiliParser as BilibiliParser
-from .kuaishou import KuaiShouParser as KuaiShouParser
-from .rednote import RedNoteParser as RedNoteParser
-from .zhihu import ZhiHuParser as ZhiHuParser
-from .duitang import DuiTangParser as DuiTangParser
-from .heybox import HeyBoxParser as HeyBoxParser
+from .kuwo import KuWoParser
+from .acfun import AcfunParser
+from .kugou import KuGouParser
+from .tieba import TiebaParser
+from .weibo import WeiBoParser
+from .douyin import DouyinParser
+from .taptap import TapTapParser
+from .netease import NCMParser
+from .qsmusic import QSMusicParser
+from .toutiao import ToutiaoParser
+from .x import XParser
+from .bilibili import BilibiliParser
+from .kuaishou import KuaiShouParser
+from .rednote import RedNoteParser
+from .zhihu import ZhiHuParser
+from .duitang import DuiTangParser
+from .heybox import HeyBoxParser
 
 __all__ = [
     "AcfunParser",
@@ -46,7 +46,7 @@ __all__ = [
     "TapTapParser",
     "TiebaParser",
     "ToutiaoParser",
-    "TwitterParser",
+    "XParser",
     "VideoContent",
     "WeiBoParser",
     "RedNoteParser",
