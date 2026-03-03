@@ -17,7 +17,7 @@ from ..base import (
 from .explore import InitialState as exploreInitialState
 from .explore import decoder as exploreDecoder
 
-_STICKER_PATTERN = re.compile(r"\[(?P<name>[^]]+R)\]")
+_STICKER_PATTERN = re.compile(r"\[(?P<name>[^]]+[a-zA-Z])\]")
 
 
 class RedNoteParser(BaseParser):
