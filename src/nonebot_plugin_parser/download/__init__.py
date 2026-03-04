@@ -20,7 +20,6 @@ from ..config import pconfig
 from ..constants import COMMON_HEADER, DOWNLOAD_TIMEOUT
 from ..exception import DownloadException, SizeLimitException, ZeroSizeException
 from ..utils.common import generate_file_name, merge_av, safe_unlink
-from ..utils.http_utils import AsyncClient
 from .task import auto_task
 
 
