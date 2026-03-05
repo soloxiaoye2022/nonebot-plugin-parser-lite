@@ -6,18 +6,16 @@
 
 import hashlib
 import itertools
-import struct
 import time as _time
 from typing import Final
 
-TIME = 0
 BASE_URL: Final[str] = "api.xiaoheihe.cn"
 PATH: Final[str] = "/bbs/app/link/tree"
 
 
-def get_nonce() -> str:
-    data = struct.pack(">d", float(TIME))
-    return hashlib.md5(data).hexdigest().upper()
+def get_nonce(time: int) -> str:
+    t = str(time).encode("utf-8")
+    return hashlib.md5(t).hexdigest().upper()
 
 
 def _vm(e: int) -> int:
@@ -92,14 +90,14 @@ def _interleave_js(arr: list[str]) -> str:
     return "".join(out)
 
 
-def get_hkey() -> str:
+def get_hkey(time: int) -> str:
     """
     精确还原 hkey&nonce.js 的 getHkey 内部逻辑。
     注意：函数签名里 (e, t, n) 在脚本里被立即覆盖，不真正使用入参。
     """
     e = PATH  # e = path;
-    t = TIME + 1  # t = time + 1;
-    n = get_nonce()  # n = getNonce();
+    t = time + 1  # t = time + 1;
+    n = get_nonce(time)  # n = getNonce();
 
     # e = "/".concat( e.split("/").filter(Boolean).join("/"), "/");
     parts = [seg for seg in e.split("/") if seg]
@@ -137,12 +135,12 @@ def get_hkey() -> str:
 
 def build_url(link_id: str) -> str:
     """构造等价的请求 URL。"""
-    global TIME
-    TIME = int(_time.time())
+    time = int(_time.time())
     return (
         f"https://{BASE_URL}{PATH}"
         "?os_type=web&app=heybox&client_type=web&version=999.0.4"
-        f"&_time={TIME}&nonce={get_nonce()}&hkey={get_hkey()}&link_id={link_id}"
+        f"&_time={time}&nonce={get_nonce(time)}&hkey={get_hkey(time)}&link_id={link_id}"
+        "&page=1&index=1&limit=20&x_client_type=web&x_app=heybox_website&x_os_type=Windows"
     )
 
 
