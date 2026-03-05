@@ -47,6 +47,11 @@
 
 ## ⚙️ 配置
 
+
+> [!NOTE]
+>
+> 插件会自动使用系统环境中的http系统代理进行网络请求
+
 <details>
 <summary>配置项</summary>
 
@@ -72,10 +77,6 @@ parser_bili_video_quality=80
 
 # [可选] 小红书 Cookie, 部分链接无法解析，可填
 parser_xhs_ck=""
-
-# [可选] 代理, 仅作用于 推特 解析
-# 推特解析会自动读取环境变量中的 http_proxy / https_proxy(代理软件通常会自动设置)
-parser_proxy=None
 
 # [可选] 音频解析，是否需要上传群文件
 parser_need_upload=False

@@ -20,7 +20,6 @@ from ..base import (
     ParseResult,
     ParseException,
     MediaContent,
-    pconfig,
 )
 
 
@@ -64,7 +63,7 @@ class XParser(BaseParser):
     async def _parse(self, searched: Match[str]) -> ParseResult:
         tweet_id = searched[1]
 
-        async with get_async_client(proxy=pconfig.proxy) as client:
+        async with get_async_client() as client:
             response = await client.post(
                 "https://easycomment.ai/api/twitter/v1/free/get-tweet-detail",
                 json={"tweet_id": tweet_id},

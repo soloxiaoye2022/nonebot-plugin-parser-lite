@@ -16,8 +16,6 @@ class Config(BaseModel):
     """bilibili cookies"""
     parser_xhs_ck: str | None = None
     """小红书 cookies"""
-    parser_proxy: str | None = None
-    """代理"""
     parser_need_upload: bool = False
     """是否需要上传音视频文件（兼容旧配置）"""
     parser_need_upload_audio: bool = False
@@ -111,11 +109,6 @@ class Config(BaseModel):
     def xhs_ck(self) -> str | None:
         """小红书 cookies"""
         return self.parser_xhs_ck
-
-    @property
-    def proxy(self) -> str | None:
-        """代理"""
-        return self.parser_proxy
 
     @property
     def need_upload(self) -> bool:
