@@ -170,20 +170,15 @@ async def parser_handler(
     # 2. 渲染并发送
     try:
         message = await RENDERER.render_messages(result)
+        await message.send()
         if pconfig.lazy_download:
             # 懒下载模式：只发送渲染结果 + 下载提示，由 lazy_matcher 负责后续内容发送
             download_cmd = ", ".join(pconfig.download_command)
-            tips = UniMessage(
-                f"请在{LazyManager.TIMEOUT_SECONDS}秒内发送以下命令之一来下载媒体资源: \n{download_cmd}"
-            )
+            await UniMessage(
+                f"请在{LazyManager.TIMEOUT_SECONDS}秒内发送以下命令之一来获取媒体资源: \n{download_cmd}"
+            ).send()
             LazyManager.add(session.user.id, result)
-
-            # 当前 RENDERER.render_messages 返回的是单条消息
-            await (message + tips).send()
         else:
-            # 非懒下载模式：先发送渲染内容，再发送下载内容
-            await message.send()
-
             async for content_msg in RENDERER.send_content(result):
                 await content_msg.send()
     except Exception as e:
