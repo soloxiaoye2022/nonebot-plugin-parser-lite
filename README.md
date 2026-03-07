@@ -79,7 +79,10 @@ parser_bili_video_quality=80
 parser_xhs_ck=""
 
 # [可选] 音频解析，是否需要上传群文件
-parser_need_upload=False
+parser_need_upload_audio=False
+
+# [可选] 视频解析，是否需要上传群文件
+parser_need_upload_video=False
 
 # [可选] 视频，图片，音频是否使用 base64 发送
 # 注意：编解码和传输 base64 会占用更多的内存,性能和带宽, 甚至可能会使 websocket 连接崩溃
@@ -103,14 +106,14 @@ parser_append_url=False
 # [可选] 是否需要转发媒体内容(超过 4 项时始终使用合并转发)
 parser_need_forward_contents=True
 
-# [可选] 是否延迟发送视频/音频，需要用户发送特定表情或点赞特定表情后才发送
-parser_delay_send_media=False
-
-# [可选] 触发延迟发送视频的表情ID列表，用于监听group_msg_emoji_like事件
-parser_delay_send_emoji_ids=[128077]
-
 # [可选] 是否开启懒下载模式，仅在用户请求时才下载视频
-parser_delay_send_lazy_download=False
+parser_lazy_download=False
+
+# [可选] 懒下载模式等待命令超时时间
+parser_lazy_download_timeout=30
+
+# [可选] 在懒下载模式中用户请求下载视频时的命令列表
+parser_download_command=["下载视频", "xz"]
 
 # [可选] 图片反代,用于解决可能的403和外网访问问题
 # (例如,https://image.baidu.com/search/down?url=)
