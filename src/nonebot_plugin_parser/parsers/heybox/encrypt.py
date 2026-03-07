@@ -140,7 +140,8 @@ def build_url(link_id: str) -> str:
         f"https://{BASE_URL}{PATH}"
         "?os_type=web&app=heybox&client_type=web&version=999.0.4"
         f"&_time={time}&nonce={get_nonce(time)}&hkey={get_hkey(time)}&link_id={link_id}"
-        "&page=1&index=1&limit=20&x_client_type=web&x_app=heybox_website&x_os_type=Windows"
+        "&page=1&index=1&limit=5&x_client_type=weboutapp&x_app=heybox_website&x_os_type=Windows"
+        "&web_version=2.5"
     )
 
 
