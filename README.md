@@ -121,7 +121,7 @@ parser_download_command=["下载视频", "xz"]
 parser_pic_proxy=None
 
 # [可选] 浏览器程序路径，如果无法识别浏览器请填写此配置
-parser_browser_path= None
+parser_browser_path=None
 ```
 
 </details>

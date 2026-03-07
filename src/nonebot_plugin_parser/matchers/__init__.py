@@ -51,6 +51,10 @@ class LazyManager:
         return session.result if session else None
 
     @classmethod
+    def has(cls, user_id: str) -> bool:
+        return user_id in cls.SESSIONS
+
+    @classmethod
     def remove(cls, user_id: str, *, current_task: asyncio.Task | None = None) -> None:
         """删除用户的懒下载会话并取消超时任务。
 
@@ -224,10 +228,15 @@ async def _():
 
 
 if pconfig.lazy_download:
+
+    def has_lazy(session: Uninfo) -> bool:
+        return LazyManager.has(session.user.id)
+
     lazy_matcher = on_alconna(
         Alconna(pconfig.download_command[0]),
         block=True,
         aliases=set(pconfig.download_command[1:]),
+        rule=has_lazy,
     )
 
     @lazy_matcher.handle()
