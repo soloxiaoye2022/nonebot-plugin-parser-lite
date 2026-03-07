@@ -40,16 +40,16 @@ class DouyinParser(BaseParser):
     @handle("douyin", r"douyin\.com/(?P<ty>video|note|article)/(?P<vid>\d+)")
     @handle(
         "iesdouyin",
-        r"iesdouyin\.com/share/(?P<ty>slides|video|note|article)/(?P<vid>\d+)",
+        r"iesdouyin\.com/share/(?P<ty>video|note|article)/(?P<vid>\d+)",
     )
     @handle(
         "m.douyin",
-        r"m\.douyin\.com/share/(?P<ty>slides|video|note|article)/(?P<vid>\d+)",
+        r"m\.douyin\.com/share/(?P<ty>video|note|article)/(?P<vid>\d+)",
     )
     # https://jingxuan.douyin.com/m/video/7574300896016862490?app=yumme&utm_source=copy_link
     @handle(
         "jingxuan.douyin",
-        r"jingxuan\.douyin.com/m/(?P<ty>slides|video|note|article)/(?P<vid>\d+)",
+        r"jingxuan\.douyin.com/m/(?P<ty>video|note|article)/(?P<vid>\d+)",
     )
     async def _parse_douyin(self, searched: re.Match[str]):
         ty, vid = searched["ty"], searched["vid"]
