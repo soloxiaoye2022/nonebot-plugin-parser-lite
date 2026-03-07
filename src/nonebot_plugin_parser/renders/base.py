@@ -44,7 +44,7 @@ class Renderer:
             image_seg = None
 
         # 尝试直接发送图片
-        msg = UniMessage(image_seg) if image_seg else UniMessage("图片渲染失败")
+        msg = UniMessage(image_seg or "图片渲染失败")
         if self.append_url:
             urls = (result.display_url, result.repost_display_url)
             msg += "\n".join(url for url in urls if url)
