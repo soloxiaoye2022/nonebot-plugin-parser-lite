@@ -2,26 +2,16 @@ import re
 from typing import ClassVar
 from urllib.parse import parse_qsl
 
-from ...utils.http_utils import get_async_client
-from ...utils.format import replace_placeholder_to_sticker
-
-from ..base import (
-    Platform,
-    BaseParser,
-    PlatformEnum,
-    ParseException,
-    handle,
-    pconfig,
-    Comment,
-    MediaContent,
-)
+from httpx import AsyncClient
 from msgspec import convert
-from .explore import (
-    CommentList,
-    NoteDetailWrapper,
-    decoder as exploreDecoder,
-)
 from nonebot.log import logger
+
+from ...utils.format import replace_placeholder_to_sticker
+from ...utils.http_utils import get_async_client
+from ..base import (BaseParser, Comment, MediaContent, ParseException,
+                    Platform, PlatformEnum, handle, pconfig)
+from .explore import CommentList, NoteDetailWrapper
+from .explore import decoder as exploreDecoder
 
 REDNOTE_PATTERN = re.compile(r"\[(?P<name>[^]]+[a-zA-Z])\]")
 
@@ -85,9 +75,7 @@ class RedNoteParser(BaseParser):
         params_dict = dict(parse_qsl(qs, keep_blank_values=True))
         xsec_token = params_dict.get("xsec_token")
         if not xsec_token:
-            # TODO: 无需 xsec_token 解析, 即自动搜索获取 xsec_token
-            # 参考 https://github.com/Cloxl/xhshow
-            # 使用搜索 API 进行获取, 但极易死号
+            # TODO: 直接请求 xhs api获取数据，但是需要计算 sign
             raise ParseException("缺少 xsec_token, 无法解析小红书链接")
 
         full_url += f"?xsec_token={xsec_token}&xsec_source=pc_share"
@@ -106,7 +94,7 @@ class RedNoteParser(BaseParser):
 
         return self._build_result(note_data)
 
-    async def _fetch_init_state(self, client, url: str) -> str:
+    async def _fetch_init_state(self, client: AsyncClient, url: str) -> str:
         """获取并提取页面中的 __INITIAL_STATE__ 原始 JSON 字符串"""
         response = await client.get(url)
         response.raise_for_status()
@@ -118,7 +106,9 @@ class RedNoteParser(BaseParser):
 
         raise ParseException("小红书分享链接失效或内容已删除")
 
-    async def _fetch_comments(self, client, note_id: str, xsec_token: str) -> dict:
+    async def _fetch_comments(
+        self, client: AsyncClient, note_id: str, xsec_token: str
+    ) -> dict:
         """获取笔记评论原始数据字典形式"""
         response = await client.get(
             "https://edith.xiaohongshu.com/api/sns/web/v2/comment/page",
