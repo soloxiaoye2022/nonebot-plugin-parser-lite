@@ -83,7 +83,7 @@ class Info(Struct):
 #     """贴纸映射列表(不全)"""
 
 
-class Comment(Struct):
+class KsComment(Struct):
     content: str
     timestamp: int
     likedCount: int
@@ -95,12 +95,12 @@ class Comment(Struct):
     author_name: str
     subCommentCount: int = 0
     """子评论数量"""
-    authorArea: str = ""
+    authorArea: str | None = None
     """归属地"""
 
 
 class SubCommentList(Struct):
-    subComments: list[Comment]
+    subComments: list[KsComment]
     """子评论列表"""
 
     def __iter__(self):
@@ -116,7 +116,7 @@ class SubCommentList(Struct):
 class CommentList(Struct):
     subCommentsMap: dict[str, SubCommentList] = {}
     """子评论映射map, {父评论id: 子评论列表}"""
-    rootComments: list[Comment] = []
+    rootComments: list[KsComment] = []
     """父评论列表"""
 
 

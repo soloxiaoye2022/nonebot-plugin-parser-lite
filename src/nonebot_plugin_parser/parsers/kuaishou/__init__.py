@@ -13,7 +13,7 @@ from ..base import (
     MediaContent,
 )
 from .decode import decode_init_state
-from .states import Data, CommentList
+from .states import Data, CommentList, KsComment
 from ...utils.format import format_num, replace_placeholder_to_sticker
 from ...utils.browser import BROWSER, DataPacket
 
@@ -113,9 +113,11 @@ class KuaiShouParser(BaseParser):
                     like_count=format_num(rc.likedCount),
                     comment_count=format_num(rc.subCommentCount),
                 ),
+                location=rc.authorArea,
             )
 
             for sc in comments.subCommentsMap.get(str(rc.comment_id), [])[:3]:
+                sc: KsComment
                 rootComment.replies.append(
                     self.create_comment(
                         author=self.create_author(
@@ -129,6 +131,7 @@ class KuaiShouParser(BaseParser):
                         stats=self.create_stats(
                             like_count=format_num(sc.likedCount),
                         ),
+                        location=sc.authorArea,
                     )
                 )
             result.append(rootComment)
