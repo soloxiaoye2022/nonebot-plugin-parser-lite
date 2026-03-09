@@ -7,7 +7,7 @@ from ..data import MediaContent
 from ..creator import create_image, create_video
 
 _TCO_RE = re.compile(r"\s*https://t\.co/\w+")
-_INVALID_CHARS_RE = re.compile(r"""[\\\/|<>*?:"\u200b-\u200d\u2060\ufeff]""")
+_INVALID_CHARS_RE = re.compile(r"[\u200b-\u200d\u2060\ufeff]")
 
 
 class Views(Struct):
