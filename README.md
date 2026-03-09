@@ -47,7 +47,6 @@
 
 ## ⚙️ 配置
 
-
 > [!NOTE]
 >
 > 插件会自动使用系统环境中的http系统代理进行网络请求
@@ -114,11 +113,6 @@ parser_lazy_download_timeout=30
 
 # [可选] 在懒下载模式中用户请求下载视频时的命令列表
 parser_download_command=["下载视频", "xz"]
-
-# [可选] 图片反代,用于解决可能的403和外网访问问题
-# (例如,https://image.baidu.com/search/down?url=)
-# 可以用于不使用魔法下载推特图片(bushi
-parser_pic_proxy=None
 
 # [可选] 浏览器程序路径，如果无法识别浏览器请填写此配置
 parser_browser_path=None
