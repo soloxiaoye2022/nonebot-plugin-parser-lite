@@ -66,7 +66,7 @@ class XParser(BaseParser):
         async with get_async_client() as client:
             response = await client.post(
                 "https://easycomment.ai/api/twitter/v1/free/get-tweet-detail",
-                json={"tweet_id": tweet_id},
+                json={"pid": tweet_id},
             )
             response.raise_for_status()
             res = response.json()
@@ -77,7 +77,7 @@ class XParser(BaseParser):
         data = res["data"]["data"]["threaded_conversation_with_injections_v2"]
         instructions = data["instructions"]
         # 目前接口返回结构依赖 instructions[1]，保留下标但提取中间变量以便后续维护
-        tweet_raw = instructions[1]["entries"][0]["itemContent"]["tweet_results"]
+        tweet_raw = instructions[1]["entries"][0]["content"]["itemContent"]["tweet_results"]
 
         tweet = convert(tweet_raw, TweetResult)
         return self.collect_data(tweet)
