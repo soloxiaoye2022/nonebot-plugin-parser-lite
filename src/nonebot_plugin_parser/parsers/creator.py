@@ -256,6 +256,7 @@ def create_comment(
     :param location: 评论位置
     :param replies: 评论回复
     :param parent_author: 评论的父级作者
+    :param download: 是否下载评论资源并发送
     """
 
     if replies is None:
