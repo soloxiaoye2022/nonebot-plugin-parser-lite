@@ -47,8 +47,8 @@ def make_req(tid: int) -> bytes:
     req_proto.data.rn = 30
     req_proto.data.r = 0
     req_proto.data.lz = 0
-    req_proto.data.with_floor = True
-    req_proto.data.floor_sort_type = True
+    req_proto.data.with_floor = 1
+    req_proto.data.floor_sort_type = 1
     req_proto.data.floor_rn = 4
     return req_proto.SerializeToString()
 
