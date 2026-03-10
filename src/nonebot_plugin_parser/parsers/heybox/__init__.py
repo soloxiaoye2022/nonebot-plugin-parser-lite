@@ -16,6 +16,7 @@ class HeyBoxParser(BaseParser):
     platform: ClassVar[Platform] = Platform(
         name=PlatformEnum.HEYBOX, display_name="小黑盒"
     )
+    x_xhh_tokenid: str = ""
 
     def __init__(self):
         super().__init__()
@@ -27,10 +28,6 @@ class HeyBoxParser(BaseParser):
                 "Accept": "application/json, text/plain, */*",
             }
         )
-        tab = BROWSER.new_tab(url="https://www.xiaoheihe.cn/")
-        self.x_xhh_tokenid = tab.run_js("window.SMSdk.getDeviceId()", as_expr=True)
-        logger.info(f"成功获取到小黑盒tokenid: {self.x_xhh_tokenid[:5]}...")
-        tab.close()
 
     @handle(
         "api.xiaoheihe.cn/v3/bbs/app/api/web/share",
@@ -40,6 +37,12 @@ class HeyBoxParser(BaseParser):
     @handle("xiaoheihe.cn/app/bbs", r"link\/(?P<link_id>[A-Za-z0-9]+)")
     async def _parse(self, searched: Match[str]):
         link_id = searched["link_id"]
+
+        if not self.x_xhh_tokenid:
+            tab = BROWSER.new_tab(url="https://www.xiaoheihe.cn/")
+            self.x_xhh_tokenid = tab.run_js("window.SMSdk.getDeviceId()", as_expr=True)
+            logger.info(f"成功获取到小黑盒tokenid: {self.x_xhh_tokenid[:5]}...")
+            tab.close()
 
         async with get_async_client(
             headers=self.headers,
