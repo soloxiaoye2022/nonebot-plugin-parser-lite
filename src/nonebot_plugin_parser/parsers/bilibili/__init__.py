@@ -199,9 +199,6 @@ class BilibiliParser(BaseParser):
 
         # 视频下载任务
         async def download_video():
-            output_path = pconfig.cache_dir / f"{video_info.bvid}-{page_num}.mp4"
-            if output_path.exists():
-                return output_path
             v_url, a_url = await self.extract_download_urls(
                 video=video, page_index=page_info.index
             )
@@ -209,11 +206,16 @@ class BilibiliParser(BaseParser):
                 raise DurationLimitException
             if a_url is not None:
                 return await DOWNLOADER.download_av_and_merge(
-                    v_url, a_url, output_path=output_path, ext_headers=self.headers
+                    v_url,
+                    a_url,
+                    file_name=f"{video_info.bvid}-{page_num}.mp4",
+                    ext_headers=self.headers,
                 )
             else:
                 return await DOWNLOADER.streamd(
-                    v_url, file_name=output_path.name, ext_headers=self.headers
+                    v_url,
+                    file_name=f"{video_info.bvid}-{page_num}.mp4",
+                    ext_headers=self.headers,
                 )
 
         # 创建视频下载内容（传递下载函数而非立即执行）

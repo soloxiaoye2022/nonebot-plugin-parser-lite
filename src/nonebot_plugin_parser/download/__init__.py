@@ -22,7 +22,8 @@ from rich.progress import (
 from ..config import pconfig
 from ..constants import COMMON_HEADER, DOWNLOAD_TIMEOUT
 from ..exception import DownloadException, SizeLimitException, ZeroSizeException
-from ..utils.common import generate_file_name, merge_av, safe_unlink
+from ..utils.common import generate_file_name, safe_unlink
+from ..utils.ffmpeg import FFmpeg
 from .task import auto_task
 
 
@@ -501,7 +502,7 @@ class StreamDownloader:
         self,
         v_url: str,
         a_url: str,
-        output_path: Path,
+        file_name: str,
         ext_headers: dict[str, str] | None = None,
     ) -> Path:
         """
@@ -509,7 +510,7 @@ class StreamDownloader:
 
         :param v_url: 视频流下载地址
         :param a_url: 音频流下载地址
-        :param output_path: 合并后输出的文件路径
+        :param file_name: 合并后输出文件名
         :param ext_headers: 额外的请求头，会与默认请求头合并
         :return: 合并后的视频文件本地路径
         :raises DownloadException: 下载或合并过程中发生错误时抛出
@@ -518,8 +519,7 @@ class StreamDownloader:
             self.download_video(url=v_url, ext_headers=ext_headers),
             self.download_audio(url=a_url, ext_headers=ext_headers),
         )
-        await merge_av(v_path=v_path, a_path=a_path, output_path=output_path)
-        return output_path
+        return await FFmpeg.merge_av(v_path=v_path, a_path=a_path, file_name=file_name)
 
     @staticmethod
     @contextlib.contextmanager
