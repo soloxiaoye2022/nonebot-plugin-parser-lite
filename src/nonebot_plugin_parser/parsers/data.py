@@ -4,6 +4,8 @@ from datetime import datetime
 from dataclasses import field, dataclass
 from collections.abc import Sequence
 
+from ..utils.ffmpeg import FFmpeg
+
 from ..download.task import DownloadTaskWrapper
 
 
@@ -14,7 +16,7 @@ def repr_path_task(path_task: DownloadTaskWrapper[Path]) -> str:
 @dataclass(repr=False, slots=True)
 class MediaContent:
     path_task: DownloadTaskWrapper[Path]
-    need_send: bool = True
+    need_send: bool = field(default=True, init=False)
     """是否发送"""
 
     @overload
@@ -92,6 +94,41 @@ class StickerContent(MediaContent):
     """贴纸描述"""
 
 
+@dataclass(repr=False, slots=True)
+class LivePhotoContent(MediaContent):
+    """iPhone Live Photo 内容"""
+
+    base_image: DownloadTaskWrapper[Path]
+    """iPhone Live Photo 底图"""
+    bgm: DownloadTaskWrapper[Path] | None = None
+    """iPhone Live Photo 背景音乐"""
+
+    @overload
+    async def get_base(self) -> Path: ...
+    @overload
+    async def get_base(self, download: Literal[True]) -> Path: ...
+    @overload
+    async def get_base(self, download: Literal[False]) -> str: ...
+    async def get_base(self, download: bool = True) -> Path | str:
+        """获取 iPhone Live Photo 底图"""
+        return await self.base_image if download else self.base_image.url
+
+    async def get_live(self) -> Path:
+        """获取 iPhone Live Photo 视频"""
+
+        bgm = await self.bgm if self.bgm else None
+        return await FFmpeg.merge_to_live_mp4(
+            await self.base_image, await self.path_task, bgm
+        )
+
+    def __repr__(self) -> str:
+        prefix = self.__class__.__name__
+        return (
+            f"{prefix}(video={self.path_task.url}, base_image={self.base_image.url}, "
+            f"bgm={self.bgm.url if self.bgm else None})"
+        )
+
+
 @dataclass(slots=True)
 class Platform:
     """平台信息"""
@@ -143,6 +180,14 @@ class Stats:
     """评论数"""
     extra: dict[str, Any] = field(default_factory=dict)
     """额外信息, 比如弹幕数/硬币数"""
+
+    def __repr__(self) -> str:
+        prefix = self.__class__.__name__
+        return (
+            f"{prefix}(view_count={self.view_count}, like_count={self.like_count}, "
+            f"collect_count={self.collect_count}, share_count={self.share_count}, "
+            f"comment_count={self.comment_count}, extra={self.extra})"
+        )
 
 
 @dataclass(repr=False, slots=True)

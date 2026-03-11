@@ -100,7 +100,11 @@ class RedNoteParser(BaseParser):
         note_data = init_state.note.noteDetailMap[note_id]
         note_data.comments_list = convert(com_data, CommentList)
 
-        return self._build_result(note_data)
+        result = self._build_result(note_data)
+        result.url = (
+            f"https://www.xiaohongshu.com/explore/{note_id}?xsec_token={xsec_token}"
+        )
+        return result
 
     async def _fetch_init_state(self, client: AsyncClient, url: str) -> str:
         """获取并提取页面中的 __INITIAL_STATE__ 原始 JSON 字符串"""
@@ -141,20 +145,7 @@ class RedNoteParser(BaseParser):
         note_detail = note_data.note
 
         contents: list[MediaContent | str] = [note_detail.desc]
-        image_urls = note_detail.image_urls
-
-        # 视频 / 图片内容
-        if video_url := note_detail.video_url:
-            cover_url = image_urls[0] if image_urls else None
-            contents.append(self.create_video(video_url, cover_url))
-        elif image_urls:
-            contents.extend(self.create_images(image_urls))
-
-        # 直播回放等附加视频
-        contents.extend(
-            self.create_video(live_url, live_cover_url)
-            for live_url, live_cover_url in note_detail.live_urls
-        )
+        contents.extend(note_detail.medias)
 
         author = self.create_author(
             name=note_detail.nickname,
@@ -177,7 +168,7 @@ class RedNoteParser(BaseParser):
             timestamp=note_detail.lastUpdateTime // 1000,
         )
 
-    def _build_comments(self, note_data) -> list[Comment]:
+    def _build_comments(self, note_data: NoteDetailWrapper) -> list[Comment]:
         """从 note_data.comments_list 构建标准 Comment 列表"""
         comment_list: list[Comment] = []
 

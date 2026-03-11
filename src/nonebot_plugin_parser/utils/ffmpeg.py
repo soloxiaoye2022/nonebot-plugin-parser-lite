@@ -1,5 +1,4 @@
 import hashlib
-import os
 from pathlib import Path
 
 from nonebot import logger
@@ -47,7 +46,7 @@ class FFmpeg:
 
         :param v_path: 视频文件路径
         :param a_path: 音频文件路径
-        :param output_path: 输出文件路径
+        :param file_name: 输出文件名
         """
         file_name = file_name or cls.generate_file_name(v_path, a_path)
         output_path = pconfig.cache_dir / f"{file_name}.mp4"
@@ -91,7 +90,7 @@ class FFmpeg:
 
         :param v_path: 视频文件路径
         :param a_path: 音频文件路径
-        :param output_path: 输出文件路径
+        :param file_name: 输出文件名
         """
         file_name = file_name or cls.generate_file_name(v_path, a_path)
         output_path = pconfig.cache_dir / f"{file_name}.mp4"
@@ -173,12 +172,16 @@ class FFmpeg:
         cls,
         image_path: Path,
         video_path: Path,
-        file_name: str,
         bgm_path: Path | None = None,
+        file_name: str | None = None,
     ):
         """
-        输入：底图、过程视频、BGM
-        输出：模拟 iPhone Live Photo 效果的 MP4
+        合并图片和视频为 iPhone Live Photo 视频
+
+        :param image_path: 图片文件路径
+        :param video_path: 视频文件路径
+        :param bgm_path: 背景音乐文件路径
+        :param file_name: 输出文件名
         """
         file_name = file_name or cls.generate_file_name(image_path, video_path)
         output_path = pconfig.cache_dir / f"{file_name}.mp4"
@@ -192,23 +195,26 @@ class FFmpeg:
             "-loop",
             "1",
             "-t",
-            "2.5",
+            "0.5",
             "-i",
             str(image_path),
         ]
 
         # 模拟 iPhone 质感的核心滤镜：
-        # - scale: 统一分辨率，补齐偶数行
-        # - setsar: 消除比例畸变
-        # - fade: 模拟 Live 播放结束后的静止感
+        # - 主视频作为参考尺寸
+        # - 静态图用 scale2ref 缩放到与主视频一致
+        # - 对静态图做淡入，再与主视频 concat
+        #
+        # 这样可以避免手动算尺寸导致 concat 报尺寸不一致。
         filter_v = (
-            "[1:v]scale='iw-mod(iw,2)':'ih-mod(ih,2)',setsar=1,"
-            "fade=t=in:st=0:d=0.4,fade=t=out:st=2.1:d=0.4[v_still];"
-            "[0:v]setsar=1[v_main];"
-            "[v_main][v_still]concat=n=2:v=1:a=0[outv]"
+            "[1:v][0:v]scale2ref=flags=bicubic[v_still_raw][v_main];"
+            "[v_main]setsar=1[v_main_sar];"
+            "[v_still_raw]setsar=1,"
+            "fade=t=in:st=0:d=0.2[v_still];"
+            "[v_main_sar][v_still]concat=n=2:v=1:a=0[outv]"
         )
 
-        if bgm_path and os.path.exists(bgm_path):
+        if bgm_path and bgm_path.exists():
             inputs += ["-i", str(bgm_path)]
             # amix: 混合原音与BGM，duration=first 保证不因BGM太长而导致视频变长
             filter_a = ";[0:a][2:a]amix=inputs=2:duration=first[outa]"
@@ -240,7 +246,6 @@ class FFmpeg:
             "aac",
             "-movflags",
             "+faststart",
-            "-shortest",
             str(output_path),
         ]
 
