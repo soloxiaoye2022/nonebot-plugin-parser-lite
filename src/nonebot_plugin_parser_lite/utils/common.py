@@ -1,13 +1,12 @@
-import re
 import asyncio
 import hashlib
-from typing import TypeVar
-from pathlib import Path
+import re
 from collections import OrderedDict
+from pathlib import Path
+from typing import TypeVar
 from urllib.parse import urlparse
 
 from nonebot import logger
-
 
 K = TypeVar("K")
 V = TypeVar("V")
@@ -28,11 +27,17 @@ class LimitedSizeDict(OrderedDict[K, V]):
             self.popitem(last=False)  # 移除最早添加的项
 
 
-def keep_zh_en_num(text: str) -> str:
+def make_filename(text: str) -> str:
     """
-    保留字符串中的中英文和数字
+    清理路径非法字符，保留中英文、数字及合法路径字符
     """
-    return re.sub(r"[^\u4e00-\u9fa5a-zA-Z0-9\-_]", "", text.replace(" ", "_"))
+    illegal_chars_pattern = r'[<>:"/\\|?*\x00-\x1f]'
+    cleaned_text = re.sub(illegal_chars_pattern, "", text)
+
+    # 将空格替换为下划线，避免路径访问问题
+    cleaned_text = cleaned_text.replace(" ", "_")
+
+    return cleaned_text
 
 
 async def safe_unlink(path: Path):
@@ -69,4 +74,4 @@ def generate_file_name(url: str, default_suffix: str = "") -> str:
     # 只用  netloc + path 作为稳定 key，忽略 query / fragment
     stable_url = f"{parsed.netloc}{parsed.path}"
     url_hash = hashlib.md5(stable_url.encode("utf-8")).hexdigest()[:16]
-    return f"{url_hash}.{suffix}"
+    return f"{url_hash}{suffix}"
