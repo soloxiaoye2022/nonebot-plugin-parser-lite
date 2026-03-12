@@ -35,7 +35,7 @@ class Comment(Struct):
     """发布时间(ms)"""
     ipLocation: str
     """IP归属地"""
-    emotes: list[Emote]
+    emotes: list[Emote] = field(default_factory=list)
     l2Comments: list["Comment"] = field(default_factory=list)
     """子评论"""
 
