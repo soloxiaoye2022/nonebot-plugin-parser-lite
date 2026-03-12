@@ -24,6 +24,15 @@ class LofterParser(BaseParser):
     )
 
     @handle(
+        "s.lofter.com",
+        r"s\.lofter\.com/-s/[0-9A-Za-z]+",
+    )
+    async def _parse_short_link(self, searched: re.Match[str]):
+        """解析 Lofter 短链"""
+        short_url = f"https://{searched[0]}"
+        return await self.parse_with_redirect(short_url)
+
+    @handle(
         "lofter.com",
         r"post/(?P<blog_hex>[0-9a-zA-Z]+)_(?P<post_hex>[0-9a-zA-Z]+)",
     )
