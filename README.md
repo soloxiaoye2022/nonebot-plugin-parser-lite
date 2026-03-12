@@ -63,59 +63,59 @@ API_TIMEOUT=30.0
 # 各项获取方式 https://nemo2011.github.io/bilibili-api/#/get-credential
 # ac_time_value 相对特殊，仅用于刷新 Cookies
 # B站网页打开开发者工具，进入控制台，输入 window.localStorage.ac_time_value 即可获取其值。
-parser_bili_ck="SESSDATA=xxxxxxxxxx;ac_time_value=131231241231241"
+plite_bili_ck="SESSDATA=xxxxxxxxxx;ac_time_value=131231241231241"
 
 # [可选] 允许的 B 站视频编码，越靠前的编码优先级越高
 # 可选 "avc"(H.264，体积较大), "hev"(HEVC), "av01"(AV1)
 # 后两项在不同设备可能有兼容性问题，如需完全避免，可只填一项，如 '["avc"]'
-parser_bili_video_codes=["avc", "av01", "hev"]
+plite_bili_video_codes=["avc", "av01", "hev"]
 
 # [可选] B 站视频清晰度
 # 360p(16), 480p(32), 720p(64), 1080p(80), 1080p+(112), 1080p_60(116), 4k(120)
-parser_bili_video_quality=80
+plite_bili_video_quality=80
 
 # [可选] 小红书 Cookie, 部分链接无法解析，可填
-parser_xhs_ck=""
+plite_xhs_ck=""
 
 # [可选] 音频解析，是否需要上传群文件
-parser_need_upload_audio=False
+plite_need_upload_audio=False
 
 # [可选] 视频解析，是否需要上传群文件
-parser_need_upload_video=False
+plite_need_upload_video=False
 
 # [可选] 视频，图片，音频是否使用 base64 发送
 # 注意：编解码和传输 base64 会占用更多的内存,性能和带宽, 甚至可能会使 websocket 连接崩溃
 # 因此该配置项仅推荐 nonebot 和 协议端不在同一机器的用户配置
-parser_use_base64=False
+plite_use_base64=False
 
 # [可选] 视频最大解析时长，单位：秒
-parser_duration_maximum=480
+plite_duration_maximum=480
 
 # [可选] 音视频下载最大文件大小，单位 MB，超过该配置将阻断下载
-parser_max_size=90
+plite_max_size=90
 
 # [可选] 全局禁止的解析
-# 示例 parser_disabled_platforms=["bilibili", "douyin"] 表示禁止了哔哩哔哩和抖音
+# 示例 plite_disabled_platforms=["bilibili", "douyin"] 表示禁止了哔哩哔哩和抖音
 # 可选值: ["bilibili", "douyin", "kuaishou", "x", "acfun", "weibo", "rednote"]
-parser_disabled_platforms=["x"]
+plite_disabled_platforms=["x"]
 
 # [可选] 是否在解析结果中附加原始URL
-parser_append_url=False
+plite_append_url=False
 
 # [可选] 是否需要转发媒体内容(超过 4 项时始终使用合并转发)
-parser_need_forward_contents=True
+plite_need_forward_contents=True
 
 # [可选] 是否开启懒下载模式，仅在用户请求时才下载视频
-parser_lazy_download=False
+plite_lazy_download=False
 
 # [可选] 懒下载模式等待命令超时时间
-parser_lazy_download_timeout=30
+plite_lazy_download_timeout=30
 
 # [可选] 在懒下载模式中用户请求下载视频时的命令列表
-parser_download_command=["下载视频", "xz"]
+plite_download_command=["xz"]
 
 # [可选] 浏览器程序路径，如果无法识别浏览器请填写此配置
-parser_browser_path=None
+plite_browser_path=None
 ```
 
 </details>

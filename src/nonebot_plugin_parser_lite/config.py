@@ -9,47 +9,47 @@ from .constants import PlatformEnum
 
 
 class Config(BaseModel):
-    parser_bili_ck: str | None = None
+    plite_bili_ck: str | None = None
     """bilibili cookies"""
-    parser_xhs_ck: str | None = None
+    plite_xhs_ck: str | None = None
     """小红书 cookies"""
-    parser_need_upload: bool = False
+    plite_need_upload: bool = False
     """是否需要上传音视频文件（兼容旧配置）"""
-    parser_need_upload_audio: bool = False
+    plite_need_upload_audio: bool = False
     """是否需要上传音频文件"""
-    parser_need_upload_video: bool = False
+    plite_need_upload_video: bool = False
     """是否需要上传视频文件"""
-    parser_use_base64: bool = False
+    plite_use_base64: bool = False
     """是否使用 base64 编码发送图片，音频，视频"""
-    parser_max_size: int = 90
+    plite_max_size: int = 90
     """资源最大大小，默认 100 单位 MB"""
-    parser_duration_maximum: int = 480
+    plite_duration_maximum: int = 480
     """视频/音频最大时长"""
-    parser_append_url: bool = False
+    plite_append_url: bool = False
     """是否在解析结果中添加原始URL"""
-    parser_append_qrcode: bool = False
+    plite_append_qrcode: bool = False
     """是否在解析结果中添加原始URL二维码"""
-    parser_disabled_platforms: list[PlatformEnum] = []
+    plite_disabled_platforms: list[PlatformEnum] = []
     """禁用的解析器"""
-    parser_blacklist_users: list[str] = []
+    plite_blacklist_users: list[str] = []
     """黑名单用户列表，这些用户触发的解析将被忽略"""
-    parser_bili_video_codes: list[VideoCodecs] = [
+    plite_bili_video_codes: list[VideoCodecs] = [
         VideoCodecs.AVC,
         VideoCodecs.AV1,
         VideoCodecs.HEV,
     ]
     """B站视频编码"""
-    parser_bili_video_quality: VideoQuality = VideoQuality._1080P
+    plite_bili_video_quality: VideoQuality = VideoQuality._1080P
     """B站视频清晰度"""
-    parser_need_forward_contents: bool = True
+    plite_need_forward_contents: bool = True
     """是否需要合并转发内容(大于四项时始终转发)"""
-    parser_lazy_download: bool = False
+    plite_lazy_download: bool = False
     """是否开启懒下载模式，仅在用户请求时才下载视频"""
-    parser_lazy_download_timeout: int = 30
+    plite_lazy_download_timeout: int = 30
     """懒下载模式等待命令超时时间"""
-    parser_download_command: list[str] = ["下载视频", "xz"]
+    plite_download_command: list[str] = ["xz"]
     """在懒下载模式中用户请求下载视频时的命令列表"""
-    parser_browser_path: str | None = None
+    plite_browser_path: str | None = None
     """浏览器程序路径，如果无法识别浏览器请填写此配置"""
 
     @property
@@ -75,92 +75,92 @@ class Config(BaseModel):
     @property
     def max_size(self) -> int:
         """资源最大大小"""
-        return self.parser_max_size
+        return self.plite_max_size
 
     @property
     def duration_maximum(self) -> int:
         """视频/音频最大时长"""
-        return self.parser_duration_maximum
+        return self.plite_duration_maximum
 
     @property
     def disabled_platforms(self) -> list[PlatformEnum]:
         """禁用的解析器"""
-        return self.parser_disabled_platforms
+        return self.plite_disabled_platforms
 
     @property
     def bili_video_codes(self) -> list[VideoCodecs]:
         """B站视频编码"""
-        return self.parser_bili_video_codes
+        return self.plite_bili_video_codes
 
     @property
     def bili_video_quality(self) -> VideoQuality:
         """B站视频清晰度"""
-        return self.parser_bili_video_quality
+        return self.plite_bili_video_quality
 
     @property
     def bili_ck(self) -> str | None:
         """bilibili cookies"""
-        return self.parser_bili_ck
+        return self.plite_bili_ck
 
     @property
     def xhs_ck(self) -> str | None:
         """小红书 cookies"""
-        return self.parser_xhs_ck
+        return self.plite_xhs_ck
 
     @property
     def need_upload_audio(self) -> bool:
         """是否需要上传音频文件"""
-        return self.parser_need_upload_audio or self.parser_need_upload
+        return self.plite_need_upload_audio or self.plite_need_upload
 
     @property
     def need_upload_video(self) -> bool:
         """是否需要上传视频文件"""
-        return self.parser_need_upload_video or self.parser_need_upload
+        return self.plite_need_upload_video or self.plite_need_upload
 
     @property
     def use_base64(self) -> bool:
         """是否使用 base64 编码发送图片，音频，视频"""
-        return self.parser_use_base64
+        return self.plite_use_base64
 
     @property
     def append_url(self) -> bool:
         """是否在解析结果中添加原始URL"""
-        return self.parser_append_url
+        return self.plite_append_url
 
     @property
     def append_qrcode(self) -> bool:
         """是否在解析结果中添加原始URL二维码"""
-        return self.parser_append_qrcode
+        return self.plite_append_qrcode
 
     @property
     def need_forward_contents(self) -> bool:
         """是否需要转发原文内容"""
-        return self.parser_need_forward_contents
+        return self.plite_need_forward_contents
 
     @property
     def blacklist_users(self) -> list[str]:
         """黑名单用户列表"""
-        return self.parser_blacklist_users
+        return self.plite_blacklist_users
 
     @property
     def download_command(self) -> list[str]:
         """在懒下载模式中用户请求下载视频时的命令列表"""
-        return self.parser_download_command
+        return self.plite_download_command
 
     @property
     def lazy_download(self) -> bool:
         """是否开启懒下载模式"""
-        return self.parser_lazy_download
+        return self.plite_lazy_download
 
     @property
     def lazy_download_timeout(self) -> int:
         """懒下载模式等待命令超时时间"""
-        return self.parser_lazy_download_timeout
+        return self.plite_lazy_download_timeout
 
     @property
     def browser_path(self) -> str | None:
         """浏览器程序路径"""
-        return self.parser_browser_path
+        return self.plite_browser_path
 
 
 # 初始化配置实例
