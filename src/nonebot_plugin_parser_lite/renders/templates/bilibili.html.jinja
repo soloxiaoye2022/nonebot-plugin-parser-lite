@@ -145,8 +145,7 @@
         {% if not is_repost %}
         <div class="decorative-stripe"></div>
         {% endif %}
-
-        <div class="cover-section">
+        <div class="content-section">
             {% if extra.type_tag %}
             <div class="tag type-tag">
                 <i class="fa-solid {{ extra.type_icon }}"></i>
@@ -164,9 +163,6 @@
                 <i class="fas fa-play" style="margin-left: 4px;"></i>
             </div>
             {% endif %}
-        </div>
-
-        <div class="content-section">
             {# --- 作者信息行 --- #}
             {% if result.author %}
             <div class="author-qr-row">
