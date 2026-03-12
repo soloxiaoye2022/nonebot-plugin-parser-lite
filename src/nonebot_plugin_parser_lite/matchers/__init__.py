@@ -13,7 +13,6 @@ from ..download import DOWNLOADER
 from ..helper import UniHelper, UniMessage
 from ..parsers import BaseParser, BilibiliParser, ParseResult
 from ..renders import RENDERER
-from ..utils.browser import BROWSER
 from ..utils.common import LimitedSizeDict
 from .rule import SUPER_PRIVATE, Searched, SearchResult, on_keyword_regex
 
@@ -134,11 +133,6 @@ def register_parser_matcher() -> None:
     patterns = [pattern for cls_ in enabled_classes for pattern in cls_._key_patterns]
     matcher = on_keyword_regex(*patterns)
     matcher.append_handler(parser_handler)
-
-
-@driver.on_shutdown
-def close_browser():
-    BROWSER.quit()
 
 
 # 缓存结果
