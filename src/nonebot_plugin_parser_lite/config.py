@@ -47,7 +47,7 @@ class Config(BaseModel):
     """是否开启懒下载模式，仅在用户请求时才下载视频"""
     plite_lazy_download_timeout: int = 30
     """懒下载模式等待命令超时时间"""
-    plite_download_command: list[str] = ["xz"]
+    plite_download_command: list[str] = ["xz", "下载"]
     """在懒下载模式中用户请求下载视频时的命令列表"""
     plite_browser_path: str | None = None
     """浏览器程序路径，如果无法识别浏览器请填写此配置"""
