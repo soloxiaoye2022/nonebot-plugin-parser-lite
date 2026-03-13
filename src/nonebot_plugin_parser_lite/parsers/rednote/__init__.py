@@ -2,12 +2,11 @@ import re
 from typing import ClassVar
 from urllib.parse import parse_qsl
 
-from httpx import AsyncClient
 from msgspec import convert
 from nonebot.log import logger
 
 from ...utils.format import replace_placeholder_to_sticker
-from ...utils.http_utils import get_async_client
+from ...utils.http_utils import get_async_client, AsyncSession
 from ..base import (
     BaseParser,
     Comment,
@@ -20,6 +19,10 @@ from ..base import (
 )
 from .explore import CommentList, NoteDetailWrapper
 from .explore import decoder as exploreDecoder
+from xhshow import Xhshow, SessionManager
+
+CLIENT = Xhshow()
+SESSION = SessionManager()
 
 REDNOTE_PATTERN = re.compile(r"\[(?P<name>[^]]+[a-zA-Z])\]")
 
@@ -39,25 +42,19 @@ class RedNoteParser(BaseParser):
 
     def __init__(self):
         super().__init__()
-        explore_headers = {
-            "accept": (
-                "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,"
-                "image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
-            )
-        }
-        self.headers.update(explore_headers)
-
-        discovery_headers = {
-            "origin": "https://www.xiaohongshu.com",
-            "x-requested-with": "XMLHttpRequest",
-            "sec-fetch-site": "same-origin",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-dest": "empty",
-        }
-        self.ios_headers.update(discovery_headers)
+        self.ios_headers.update(
+            {
+                "origin": "https://www.xiaohongshu.com",
+                "x-requested-with": "XMLHttpRequest",
+                "sec-fetch-site": "same-origin",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-dest": "empty",
+            }
+        )
+        self.comment_headers = self.headers.copy()
 
         if pconfig.xhs_ck:
-            self.headers["cookie"] = pconfig.xhs_ck
+            self.comment_headers["cookie"] = pconfig.xhs_ck
             self.ios_headers["cookie"] = pconfig.xhs_ck
 
     @handle("xhslink.com", r"xhslink\.com/[A-Za-z0-9._?%&+=/#@-]+")
@@ -106,7 +103,7 @@ class RedNoteParser(BaseParser):
         )
         return result
 
-    async def _fetch_init_state(self, client: AsyncClient, url: str) -> str:
+    async def _fetch_init_state(self, client: AsyncSession, url: str) -> str:
         """获取并提取页面中的 __INITIAL_STATE__ 原始 JSON 字符串"""
         response = await client.get(url)
         response.raise_for_status()
@@ -119,9 +116,23 @@ class RedNoteParser(BaseParser):
         raise ParseException("小红书分享链接失效或内容已删除")
 
     async def _fetch_comments(
-        self, client: AsyncClient, note_id: str, xsec_token: str
+        self, client: AsyncSession, note_id: str, xsec_token: str
     ) -> dict:
         """获取笔记评论原始数据字典形式"""
+        self.comment_headers.update(
+            CLIENT.sign_headers_get(
+                "https://edith.xiaohongshu.com/api/sns/web/v2/comment/page",
+                cookies=pconfig.xhs_ck or "",
+                params={
+                    "note_id": note_id,
+                    "cursor": "",
+                    "top_comment_id": "",
+                    "image_formats": "jpg,webp,avif",
+                    "xsec_token": xsec_token,
+                },
+                session=SESSION,
+            )
+        )
         response = await client.get(
             "https://edith.xiaohongshu.com/api/sns/web/v2/comment/page",
             params={
@@ -131,6 +142,7 @@ class RedNoteParser(BaseParser):
                 "image_formats": "jpg,webp,avif",
                 "xsec_token": xsec_token,
             },
+            headers=self.comment_headers,
         )
         data = response.json()
         if data.get("code") != 0:
