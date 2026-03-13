@@ -355,6 +355,8 @@ class Renderer:
             result.render_image = image_path
             if pconfig.use_base64:
                 return UniHelper.img_seg(raw=image_raw)
+        if result.render_image.stat().st_size >= 5 * 1024 * 1024:
+            return UniHelper.file_seg(result.render_image)
 
         return UniHelper.img_seg(result.render_image)
 
