@@ -214,7 +214,7 @@ class BaseParser:
         headers = headers or COMMON_HEADER.copy()
         async with get_async_client(
             headers=headers,
-            follow_redirects=False,
+            allow_redirects=False,
         ) as client:
             response = await client.get(url)
             if response.status_code >= 400:
