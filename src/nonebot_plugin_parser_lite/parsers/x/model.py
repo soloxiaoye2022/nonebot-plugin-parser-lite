@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 import re
 
-from msgspec import Struct
+from msgspec import Struct, field
 
 from ..data import MediaContent
 from ..creator import create_image, create_video
@@ -38,7 +38,7 @@ class Media(Struct):
 
 
 class ExtendedEntities(Struct):
-    meida: list[Media]
+    media: list[Media] = field(default_factory=list)
 
 
 class UserLegacy(Struct):
@@ -77,12 +77,12 @@ class TweetLegacy(Struct):
     @property
     def medias(self) -> list[MediaContent]:
         """返回所有媒体的资源"""
-        if not self.extended_entities or not self.extended_entities.meida:
+        if not self.extended_entities or not self.extended_entities.media:
             return []
 
         medias: list[MediaContent] = []
 
-        for media in self.extended_entities.meida:
+        for media in self.extended_entities.media:
             # 图片：直接用 media_url_https
             if media.type == "photo":
                 medias.append(create_image(url=media.media_url_https))
