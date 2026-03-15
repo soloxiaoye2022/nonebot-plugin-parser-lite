@@ -116,7 +116,7 @@ class NCMParser(BaseParser):
 
         # 创建封面图片内容
 
-        contents.append(self.create_image(result["cover_url"]))
+        contents.append(self.create_image(result["cover_url"], need_send=False))
 
         # 构建额外信息
         extra = {

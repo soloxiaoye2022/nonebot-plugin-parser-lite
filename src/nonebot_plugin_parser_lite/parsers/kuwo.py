@@ -78,7 +78,7 @@ class KuWoParser(BaseParser):
                 contents: list[MediaContent] = []
 
                 if cover_url := music_data.get("pic"):
-                    contents.append(self.create_image(cover_url))
+                    contents.append(self.create_image(cover_url, need_send=False))
 
                 # 添加音频内容到列表
                 contents.append(audio_content)
