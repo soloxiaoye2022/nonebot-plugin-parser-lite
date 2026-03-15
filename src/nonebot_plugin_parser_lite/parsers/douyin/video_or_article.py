@@ -4,6 +4,9 @@ from typing import Any
 from msgspec import Struct, field
 from msgspec.json import Decoder
 
+from ..data import MediaContent
+from ..creator import create_image, create_video
+
 from ..base import ParseException
 
 
@@ -56,6 +59,7 @@ class Statistics(Struct):
 
 
 class VideoData(Struct):
+    aweme_id: str
     create_time: int
     author: Author
     statistics: Statistics
@@ -64,20 +68,29 @@ class VideoData(Struct):
     video: Video | None = None
 
     @property
-    def image_urls(self) -> list[str]:
-        return [choice(image.url_list) for image in self.images] if self.images else []
-
-    @property
-    def video_url(self) -> str | None:
-        return (
-            choice(self.video.play_addr.url_list).replace("playwm", "play")
-            if self.video
-            else None
-        )
-
-    @property
-    def cover_url(self) -> str | None:
-        return choice(self.video.cover.url_list) if self.video else None
+    def medias(self) -> list[MediaContent]:
+        medias: list[MediaContent] = []
+        if self.images:
+            for image in self.images:
+                medias.append(
+                    create_image(
+                        url=image.url_list[0].replace("playwm", "play"),
+                        extra_headers={"Referer": "https://www.douyin.com/"},
+                    )
+                )
+        if self.video:
+            medias.append(
+                create_video(
+                    url_or_task=self.video.play_addr.url_list[0].replace(
+                        "playwm", "play"
+                    ),
+                    cover_url=self.video.cover.url_list[0],
+                    duration=self.video.duration,
+                    video_name=f"{self.aweme_id}.mp4",
+                    extra_headers={"Referer": "https://www.douyin.com/"},
+                )
+            )
+        return medias
 
 
 class VideoInfoRes(Struct):
@@ -85,7 +98,7 @@ class VideoInfoRes(Struct):
 
     @property
     def video_data(self) -> VideoData:
-        if len(self.item_list) == 0:
+        if not self.item_list:
             raise ParseException("can't find data in videoInfoRes")
         return choice(self.item_list)
 

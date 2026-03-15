@@ -1,9 +1,11 @@
 import re
 from typing import ClassVar
 
+from msgspec import convert
 from nonebot import logger
 
 from ...utils.http_utils import get_async_client
+from ...utils.browser import BROWSER
 
 from ..base import (
     Platform,
@@ -11,13 +13,20 @@ from ..base import (
     PlatformEnum,
     ParseException,
     handle,
+    MediaContent,
 )
-from .video import decoder
+import json_repair
+from .video_or_article import decoder as video_or_article_decoder
+from .note import Note
 from ...utils.format import format_num
 
 
 ROUTER_PATTERN = re.compile(
     pattern=r"window\._ROUTER_DATA\s*=\s*(.*?)</script>",
+    flags=re.DOTALL,
+)
+NOTE_PATTERN = re.compile(
+    pattern=r'self\.__pace_f\.push\(\[1,"7:.*?null,(.*?)</script>',
     flags=re.DOTALL,
 )
 
@@ -37,32 +46,85 @@ class DouyinParser(BaseParser):
 
     # https://www.douyin.com/video/7521023890996514083
     # https://www.douyin.com/note/7469411074119322899
-    @handle("douyin", r"douyin\.com/(?P<ty>video|note|article)/(?P<vid>\d+)")
+    # https://m.douyin.com/share/note/7591875747808560613
+    @handle("douyin", r"douyin\.com/(?P<ty>video|note|slides|article)/(?P<vid>\d+)")
     @handle(
         "iesdouyin",
-        r"iesdouyin\.com/share/(?P<ty>video|note|article)/(?P<vid>\d+)",
+        r"iesdouyin\.com/share/(?P<ty>video|note|slides|article)/(?P<vid>\d+)",
     )
     @handle(
         "m.douyin",
-        r"m\.douyin\.com/share/(?P<ty>video|note|article)/(?P<vid>\d+)",
+        r"m\.douyin\.com/share/(?P<ty>video|note|slides|article)/(?P<vid>\d+)",
     )
     # https://jingxuan.douyin.com/m/video/7574300896016862490?app=yumme&utm_source=copy_link
     @handle(
         "jingxuan.douyin",
-        r"jingxuan\.douyin.com/m/(?P<ty>video|note|article)/(?P<vid>\d+)",
+        r"jingxuan\.douyin.com/m/(?P<ty>video|note|slides|article)/(?P<vid>\d+)",
     )
     async def _parse_douyin(self, searched: re.Match[str]):
         ty, vid = searched["ty"], searched["vid"]
-        if ty == "article":
-            ty = "note"
-        url = f"https://m.douyin.com/share/{ty}/{vid}"
         try:
-            return await self.parse_video(url)
+            if ty in ["video", "article"]:
+                return await self.parse_video_or_article(
+                    f"https://m.douyin.com/share/{ty}/{vid}"
+                )
+            else:
+                return await self.parse_note(vid)
         except ParseException as e:
-            logger.warning(f"failed to parse {url}, error: {e}")
+            logger.warning(f"failed to parse {searched[0]}, error: {e}")
         raise ParseException("分享已删除或资源直链提取失败, 请稍后再试")
 
-    async def parse_video(self, url: str):
+    async def parse_note(self, vid: str):
+        tab = BROWSER.new_tab()
+        tab.set.load_mode.eager()
+        tab.get(f"https://www.douyin.com/note/{vid}")
+        text = tab.html
+        tab.close()
+        matched = NOTE_PATTERN.search(text)
+
+        if not matched or not matched[1]:
+            raise ParseException("未找到数据，可能触发验证码风控")
+        data = convert(
+            json_repair.loads(
+                matched[1].replace('\\"', '"'),
+                skip_json_loads=True,
+            ),
+            Note,
+        )
+        content: list[MediaContent | str] = [data.aweme.detail.desc]
+        content.extend(data.aweme.content)
+        comments = [
+            self.create_comment(
+                author=self.create_author(
+                    name=comment.user.nickname, avatar_url=comment.user.avatarUri
+                ),
+                content=comment.content,
+                timestamp=comment.createTime,
+                stats=self.create_stats(
+                    like_count=format_num(comment.diggCount),
+                    comment_count=format_num(comment.replyTotal),
+                ),
+                location=comment.ipLabel,
+            )
+            for comment in data.comment.comments
+        ]
+        return self.result(
+            author=self.create_author(
+                name=data.aweme.detail.authorInfo.nickname,
+                avatar_url=data.aweme.detail.authorInfo.avatarUri,
+            ),
+            content=content,
+            stats=self.create_stats(
+                like_count=format_num(data.aweme.stats.diggCount),
+                comment_count=format_num(data.aweme.stats.commentCount),
+                share_count=format_num(data.aweme.stats.shareCount),
+                collect_count=format_num(data.aweme.stats.collectCount),
+            ),
+            timestamp=data.aweme.detail.createTime,
+            comments=comments,
+        )
+
+    async def parse_video_or_article(self, url: str):
         async with get_async_client(
             headers=self.ios_headers,
             allow_redirects=False,
@@ -77,27 +139,14 @@ class DouyinParser(BaseParser):
         if not matched or not matched[1]:
             raise ParseException("can't find _ROUTER_DATA in html")
 
-        data = decoder.decode(matched[1].strip())
+        data = video_or_article_decoder.decode(matched[1].strip())
         video_data = data.video_data
-        # 使用新的简洁构建方式
-        contents = []
+        content: list[MediaContent | str] = [video_data.desc]
 
-        # 添加图片内容
-        if image_urls := video_data.image_urls:
-            contents.extend(self.create_images(image_urls))
-
-        # 添加视频内容
-        elif video_url := video_data.video_url:
-            cover_url = video_data.cover_url
-            duration = video_data.video.duration if video_data.video else 0
-            contents.append(self.create_video(video_url, cover_url, duration))
+        content.extend(video_data.medias)
 
         stats = video_data.statistics
 
-        # 构建作者
-        author = self.create_author(
-            name=video_data.author.nickname, avatar_url=video_data.author.avatar_url
-        )
         comments = [
             self.create_comment(
                 author=self.create_author(
@@ -114,9 +163,10 @@ class DouyinParser(BaseParser):
             for comment in data.comment_list.comments
         ]
         return self.result(
-            title=video_data.desc,
-            author=author,
-            content=contents,
+            author=self.create_author(
+                name=video_data.author.nickname, avatar_url=video_data.author.avatar_url
+            ),
+            content=content,
             stats=self.create_stats(
                 like_count=format_num(stats.digg_count),
                 comment_count=format_num(stats.comment_count),
