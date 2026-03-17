@@ -135,7 +135,9 @@ class NoteDetail(Struct):
         if self.video:
             items.append(
                 create_video(
-                    url_or_task=self.video.url, cover_url=self.imageList[0].urlDefault
+                    url_or_task=self.video.url,
+                    cover_url=self.imageList[0].urlDefault,
+                    extra_headers={"Referer": "https:///www.xiaohongshu.com"},
                 )
             )
         else:
@@ -146,10 +148,16 @@ class NoteDetail(Struct):
                         create_live_photo(
                             video_url=img.stream.url,
                             image_url=img.urlDefault,
+                            extra_headers={"Referer": "https:///www.xiaohongshu.com"},
                         )
                     )
                 else:
-                    items.append(create_image(url=img.urlDefault))
+                    items.append(
+                        create_image(
+                            url=img.urlDefault,
+                            extra_headers={"Referer": "https:///www.xiaohongshu.com"},
+                        )
+                    )
 
         return items
 
@@ -172,7 +180,13 @@ class Comment(Struct):
     @property
     def content(self) -> list[MediaContent | str]:
         content = replace_placeholder_to_sticker(self.text, REDNOTE_PATTERN, "rednote")
-        content.extend(create_image(pic.url_default) for pic in self.pictures)
+        content.extend(
+            create_image(
+                url=pic.url_default,
+                extra_headers={"Referer": "https:///www.xiaohongshu.com"},
+            )
+            for pic in self.pictures
+        )
         return content
 
 
