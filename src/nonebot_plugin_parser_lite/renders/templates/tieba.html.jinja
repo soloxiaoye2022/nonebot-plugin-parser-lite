@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tieba Post</title>
-  {% from "comments.jinja" import render_comments %}
+  {% from "macros.jinja" import render_comments, render_content %}
   {% from "stats.jinja" import render_stats %}
   {% include "share.html" %}
   <style>
@@ -56,11 +56,11 @@
       <div class="title">{{ result.title }}</div>
       {% endif %}
 
-      <div class="text">{{ result.content | safe }}</div>
+      <div class="text">{{ render_content(result.content) }}</div>
     </div>
 
     <!-- 评论区域 -->
-    {{ render_comments(result) }}
+    {{ render_comments(result.comments) }}
 
     <!-- 底部 -->
     <div class="footer-section">

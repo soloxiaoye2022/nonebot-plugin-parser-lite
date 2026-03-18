@@ -1,4 +1,5 @@
 import datetime
+from itertools import chain
 import uuid
 from collections.abc import AsyncGenerator
 from io import BytesIO
@@ -21,8 +22,47 @@ from ..parsers.data import (
     ParseResult,
     VideoContent,
 )
-from .utils import build_comments, build_html, build_plain_text
 import traceback
+
+
+async def safe_path(obj: Any, method: str = "get_path") -> str:
+    """
+    通用安全路径获取过滤器
+
+    用法：
+        {{ cont | safe_path }}                    # 默认调用 get_path()
+        {{ cont | safe_path("get_base") }}        # 调用 get_base()
+        {{ cont | safe_path("get_cover_path") }}  # 调用 get_cover_path()
+        {{ author | safe_path("get_avatar_path") }} # 调用 get_avatar_path()
+    """
+    try:
+        # 检查对象是否有指定方法
+        if not hasattr(obj, method):
+            logger.warning(f"Object {type(obj).__name__} has no method '{method}'")
+            return ""
+
+        # 获取方法并调用
+        method_func = getattr(obj, method)
+        src = method_func()
+
+        # 如果是 coroutine，需要 await
+        if hasattr(src, "__await__"):
+            src = await src
+
+        # 处理 None 或空值
+        if not src:
+            return ""
+
+        # 自动执行 as_uri() 转换
+        if isinstance(src, Path) or hasattr(src, "as_uri"):
+            return src.as_uri()
+
+        # 已经是字符串，直接返回
+        return str(src)
+
+    except Exception as e:
+        logger.warning(f"safe_path({method}) failed for {type(obj).__name__}: {e}")
+        return ""
 
 
 class Renderer:
@@ -63,8 +103,10 @@ class Renderer:
         """
         forwardable_segs: list[ForwardNodeInner] = []
         failed_count = 0
+        repost_medias = result.repost.content if result.repost else []
         media_contents = [
-            cont for cont in result.content 
+            cont
+            for cont in chain(result.content, repost_medias)
             if isinstance(cont, MediaContent) and cont.need_send
         ]
         for cont in media_contents:
@@ -177,7 +219,9 @@ class Renderer:
         author_name = result.author.name if result.author else "未知用户"
 
         # 1. 当前文本
-        if plain := build_plain_text(list(result.content)):
+        if plain := "".join(
+            f"\n{c}" for c in result.content if isinstance(c, str) and c
+        ):
             ordered.append(f"{author_name}：{plain}")
 
         # 2. 当前媒体
@@ -234,28 +278,31 @@ class Renderer:
                 if (self.templates_dir / file_name).exists():
                     template_name = file_name
 
-            # from jinja2 import FileSystemLoader, Environment
+        # from jinja2 import FileSystemLoader, Environment
 
-            # # 创建一个包加载器对象
-            # env = Environment(loader=FileSystemLoader(self.templates_dir))
-            # template = env.get_template(template_name)
-            # # 渲染
-            # with open(
-            #     f"{self.templates_dir.parent.parent}/{datetime.datetime.now().strftime('%Y-%m-%d-%H%M%S')}.html",
-            #     "w",
-            #     encoding="utf8",
-            # ) as f:  # noqa: E501
-            #     f.write(
-            #         template.render(
-            #             **{
-            #                 "result": template_data,
-            #                 "rendering_time": datetime.datetime.now().strftime(
-            #                     "%Y-%m-%d %H:%M:%S"
-            #                 ),
-            #                 "bot_name": _nickname,
-            #             }
-            #         )
-            #     )
+        # # 创建一个包加载器对象
+        # env = Environment(
+        #     loader=FileSystemLoader(self.templates_dir), enable_async=True
+        # )
+        # template = env.get_template(template_name)
+        # # 渲染
+        # with open(
+        #     f"{self.templates_dir.parent.parent}/{datetime.datetime.now().strftime('%Y-%m-%d-%H%M%S')}.html",
+        #     "w",
+        #     encoding="utf8",
+        # ) as f:  # noqa: E501
+        #     f.write(
+        #         await template.render_async(
+        #             **{
+        #                 "result": template_data,
+        #                 "max_comments": pconfig.max_comments,
+        #                 "rendering_time": datetime.datetime.now().strftime(
+        #                     "%Y-%m-%d %H:%M:%S"
+        #                 ),
+        #                 "bot_name": _nickname,
+        #             }
+        #         )
+        #     )
 
         return await template_to_pic(
             template_path=str(self.templates_dir),
@@ -263,6 +310,7 @@ class Renderer:
             screenshot_timeout=60000,
             templates={
                 "result": template_data,
+                "max_comments": pconfig.max_comments,
                 "rendering_time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "bot_name": _nickname,
             },
@@ -270,17 +318,14 @@ class Renderer:
                 "viewport": {"width": 800, "height": 100},
                 "base_url": f"file://{self.templates_dir}",
             },
+            filters={"safe_path": safe_path},
         )
 
-    async def _resolve_parse_result(
-        self, result: ParseResult, download: bool = True
-    ) -> dict[str, Any]:
+    async def _resolve_parse_result(self, result: ParseResult) -> dict[str, Any]:
         """解析 ParseResult 为模板可用的字典数据"""
 
         logo_path = Path(__file__).parent / "resources" / f"{result.platform.name}.png"
-        content = await build_html(list(result.content), download=download)
-        comments = await build_comments(result.comments)
-        avatar_path = await result.author.get_avatar_path(download=False)
+        avatar_path = await result.author.get_avatar_path()
         # 这些是一定会有的字段
         data: dict[str, Any] = {
             "title": result.title,
@@ -292,21 +337,19 @@ class Renderer:
                 "name": result.platform.name,
                 "logo_path": (logo_path.as_uri() if logo_path.exists() else None),
             },
-            "content": content,
+            "content": result.content,
             "cover_path": await result.get_cover_path(),
             "stats": result.stats,
-            "comments": comments,
+            "comments": result.comments,
             "author": {
                 "name": result.author.name,
-                "id": result.author.id,  # 传递 UID
-                "avatar_path": avatar_path or None,
+                "id": result.author.id,
+                "avatar_path": avatar_path,
             },
         }
 
         if result.repost:
-            data["repost"] = await self._resolve_parse_result(
-                result.repost, download=False
-            )
+            data["repost"] = await self._resolve_parse_result(result.repost)
 
         # 添加二维码支持
         if pconfig.append_qrcode and result.url:

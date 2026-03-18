@@ -6,12 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Media Card</title>
   {% include "share.html" %}
-  {% from "comments.jinja" import render_comments %}
+  {% from "macros.jinja" import render_comments, render_content %}
   {% from "stats.jinja" import render_stats %}
 </head>
 
 <body>
   {% macro render_card(result, is_repost=False) %}
+  {% set comments = result.repost.comments if is_repost else result.comments %}
   <div class="card" {% if is_repost %}style="width: 100%; margin-bottom: 0;" {% endif %}>
     {% if not is_repost %}
     <div class="decorative-stripe"></div>
@@ -53,12 +54,12 @@
       {% endif %}
 
       {# Content #}
-      <div>{{ result.content | safe }}</div>
-      {# Repost #} {% if result.repost %} {{
-      render_card(result.repost, is_repost=True) }} {% endif %}
+      <div>{{ render_content(result.content) }}</div>
+      {# Repost #} {% if result.repost %}
+      {{ render_card(result.repost, is_repost=True) }} {% endif %}
     </div>
     {# --- 评论区 --- #}
-    {{ render_comments(result) }}
+    {{ render_comments(comments) }}
     {# --- 底部 --- #}
     {% if not is_repost %}
     <div class="footer-section">

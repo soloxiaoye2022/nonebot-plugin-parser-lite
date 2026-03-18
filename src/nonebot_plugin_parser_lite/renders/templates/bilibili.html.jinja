@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bilibili Card</title>
-    {% from "comments.jinja" import render_comments %}
+    {% from "macros.jinja" import render_comments, render_content %}
     {% from "stats.jinja" import render_stats %}
     {% include "share.html" %}
     <style>
@@ -135,6 +135,7 @@
 
     {# 变量定义 #}
     {% set extra = result.extra if result.extra else {} %}
+    {% set comments = result.repost.comments if is_repost else result.comments %}
     {% set platform = result.platform %}
     {% set content_id = extra.content_id %}
     {% set type_tag = extra.type_tag if extra.type_tag else "B站" %}
@@ -205,7 +206,7 @@
             {% endif %}
 
             {# --- 正文描述 --- #}
-            <div>{{ result.content | safe }}</div>
+            <div>{{ render_content(result.content) }}</div>
 
             {# --- 旧版 Repost (保留兼容性) --- #}
             {% if result.repost %}
@@ -221,7 +222,7 @@
             {% endif %}
         </div>
         {# --- 评论区 --- #}
-        {{ render_comments(result) }}
+        {{ render_comments(comments) }}
         {# --- 底部 --- #}
         {% if not is_repost %}
         <div class="footer-section">

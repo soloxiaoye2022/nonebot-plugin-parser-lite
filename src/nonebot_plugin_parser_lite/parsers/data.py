@@ -1,4 +1,4 @@
-from typing import Any, Literal, TypedDict, overload
+from typing import Any, Literal, TypedDict
 from pathlib import Path
 from datetime import datetime
 from dataclasses import field, dataclass
@@ -19,14 +19,8 @@ class MediaContent:
     need_send: bool = field(default=True, init=False)
     """是否发送"""
 
-    @overload
-    async def get_path(self) -> Path: ...
-    @overload
-    async def get_path(self, download: Literal[True]) -> Path: ...
-    @overload
-    async def get_path(self, download: Literal[False]) -> str: ...
-    async def get_path(self, download: bool = True) -> Path | str:
-        return await self.path_task if download else self.path_task.url
+    async def get_path(self) -> Path:
+        return await self.path_task
 
     def __repr__(self) -> str:
         prefix = self.__class__.__name__
@@ -49,16 +43,10 @@ class VideoContent(MediaContent):
     duration: float = 0.0
     """时长 单位: 秒"""
 
-    @overload
-    async def get_cover_path(self) -> Path | None: ...
-    @overload
-    async def get_cover_path(self, download: Literal[True]) -> Path | None: ...
-    @overload
-    async def get_cover_path(self, download: Literal[False]) -> str | None: ...
-    async def get_cover_path(self, download: bool = True) -> Path | str | None:
+    async def get_cover_path(self) -> Path | None:
         if self.cover is None:
             return None
-        return await self.cover if download else self.cover.url
+        return await self.cover
 
     @property
     def display_duration(self) -> str:
@@ -103,15 +91,9 @@ class LivePhotoContent(MediaContent):
     bgm: DownloadTaskWrapper[Path] | None = None
     """iPhone Live Photo 背景音乐"""
 
-    @overload
-    async def get_base(self) -> Path: ...
-    @overload
-    async def get_base(self, download: Literal[True]) -> Path: ...
-    @overload
-    async def get_base(self, download: Literal[False]) -> str: ...
-    async def get_base(self, download: bool = True) -> Path | str:
+    async def get_base(self) -> Path:
         """获取 iPhone Live Photo 底图"""
-        return await self.base_image if download else self.base_image.url
+        return await self.base_image
 
     async def get_live(self) -> Path:
         """获取 iPhone Live Photo 视频"""
@@ -152,16 +134,10 @@ class Author:
     description: str | None = None
     """作者个性签名等"""
 
-    @overload
-    async def get_avatar_path(self) -> Path | None: ...
-    @overload
-    async def get_avatar_path(self, download: Literal[True]) -> Path | None: ...
-    @overload
-    async def get_avatar_path(self, download: Literal[False]) -> str | None: ...
-    async def get_avatar_path(self, download: bool = True) -> Path | str | None:
+    async def get_avatar_path(self) -> Path | None:
         if self.avatar is None:
             return None
-        return await self.avatar if download else self.avatar.url
+        return await self.avatar
 
 
 @dataclass(repr=False, slots=True)
@@ -261,20 +237,14 @@ class ParseResult:
     def extra_info(self) -> str | None:
         return self.extra.get("info")
 
-    @overload
-    async def get_cover_path(self) -> Path | None: ...
-    @overload
-    async def get_cover_path(self, download: Literal[True]) -> Path | None: ...
-    @overload
-    async def get_cover_path(self, download: Literal[False]) -> str | None: ...
-    async def get_cover_path(self, download: bool = True) -> str | Path | None:
+    async def get_cover_path(self) -> Path | None:
         """获取封面路径"""
         # 先检查视频内容
         for cont in self.content:
             if isinstance(cont, VideoContent):
-                return await cont.get_cover_path(download=download)
+                return await cont.get_cover_path()
             elif isinstance(cont, (ImageContent, GraphicContent)):
-                return await cont.get_path(download=download)
+                return await cont.get_path()
         return None
 
     @property
