@@ -75,7 +75,6 @@ return ""
 {% set first_text_seen = true %}
 {% elif cont.__class__.__name__ == 'GraphicContent' %}
 {% set src = cont | safe_path %}
-{% endif %}
 {% set alt = cont.alt or "" %}
 <div class="images-container">
     <div class="images-grid single">
