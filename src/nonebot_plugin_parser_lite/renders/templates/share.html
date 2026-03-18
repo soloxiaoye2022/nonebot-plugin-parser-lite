@@ -606,12 +606,13 @@
     padding: 0 4px;
   }
 </style>
-<script>
+<script defer>
   document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.images-grid.single .image-item').forEach(item => {
       const img = item.querySelector('img');
       if (img) {
-        if (img.height > img.width) {
+        const aspectRatio = img.height / img.width;
+        if (aspectRatio >= 0.9) {
           item.classList.add('aspect-ratio-portrait');
         } else {
           item.classList.add('aspect-ratio-landscape');
