@@ -5,7 +5,7 @@ from msgspec import convert
 from nonebot import logger
 
 from ...utils.format import format_num
-from ...utils.http_utils import get_async_client
+from httpx import AsyncClient
 from ..base import (
     BaseParser,
     MediaContent,
@@ -40,7 +40,7 @@ class LofterParser(BaseParser):
         blog_id = int(searched["blog_hex"], 16)
         post_id = int(searched["post_hex"], 16)
 
-        async with get_async_client() as client:
+        async with AsyncClient() as client:
             # 帖子详情
             post_resp = await client.post(
                 "https://api.lofter.com/oldapi/post/detail.api",

@@ -5,7 +5,7 @@ from typing import ClassVar
 
 from bs4 import Tag, BeautifulSoup
 
-from ...utils.http_utils import get_async_client
+from httpx import AsyncClient
 from math import ceil
 from .article import decoder as articleDecoder
 from .common import WeiboData, decoder as commonDecoder
@@ -85,7 +85,7 @@ class WeiBoParser(BaseParser):
             "_t": int(time() * 1000),
         }
 
-        async with get_async_client(
+        async with AsyncClient(
             headers=self.headers,
         ) as client:
             response = await client.get(url, params=params)
@@ -137,7 +137,7 @@ class WeiBoParser(BaseParser):
             **self.headers,
         }
 
-        async with get_async_client(headers=headers) as client:
+        async with AsyncClient(headers=headers) as client:
             response = await client.post(
                 req_url, data={"data": f'{{Component_Play_Playinfo": {{"oid": {fid}}}'}
             )
@@ -181,9 +181,9 @@ class WeiBoParser(BaseParser):
         url = f"https://www.weibo.cn/statuses/show?id={weibo_id}&_={ts}"
 
         # 关键：不带 cookie、不跟随重定向（避免二跳携 cookie）
-        async with get_async_client(
+        async with AsyncClient(
             headers=headers,
-            allow_redirects=False,
+            follow_redirects=False,
         ) as client:
             response = await client.get(url)
             if response.status_code != 200:

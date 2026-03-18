@@ -23,7 +23,6 @@ from msgspec import convert
 from nonebot import logger
 
 from ...utils.format import format_num
-from ...utils.http_utils import get_async_client, AsyncSession
 from ..base import (
     DOWNLOADER,
     Author,
@@ -40,6 +39,7 @@ from ..base import (
     pconfig,
 )
 from ..cookie import ck2dict
+from httpx import AsyncClient
 from .dynamic import DynamicData, DynamicInfo
 from .favlist import FavData
 from .live import RoomData
@@ -921,7 +921,7 @@ class BilibiliParser(BaseParser):
                     f"{k}={v}" for k, v in cookies.items()
                 )
 
-        async with get_async_client() as client:
+        async with AsyncClient() as client:
             # 1. 热评接口
             hot_url = "https://api.bilibili.com/x/v2/reply/hot"
             hot_params = {
@@ -969,7 +969,7 @@ class BilibiliParser(BaseParser):
 
     async def _request_comment_api(
         self,
-        client: AsyncSession,
+        client: AsyncClient,
         *,
         api_url: str,
         params: dict[str, Any],

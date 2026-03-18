@@ -1,7 +1,6 @@
 import re
 from typing import ClassVar
-
-from ...utils.http_utils import get_async_client
+from httpx import AsyncClient
 from ..base import (
     DOWNLOADER,
     BaseParser,
@@ -64,7 +63,7 @@ class AcfunParser(BaseParser):
         # 拼接查询参数
         url = f"{url}?quickViewId=videoInfo_new&ajaxpipe=1"
 
-        async with get_async_client(headers=self.headers) as client:
+        async with AsyncClient(headers=self.headers) as client:
             response = await client.get(url)
             response.raise_for_status()
             raw = response.text

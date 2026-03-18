@@ -1,7 +1,7 @@
 import re
 from typing import ClassVar
 
-from ...utils.http_utils import get_async_client
+from httpx import AsyncClient
 
 
 from ...utils.format import format_num
@@ -71,7 +71,7 @@ class ZhiHuParser(BaseParser):
         return answerDecoder.decode(raw)
 
     async def fetch_video(self, video_id: str):
-        async with get_async_client() as client:
+        async with AsyncClient() as client:
             res = await client.post(
                 "https://www.zhihu.com/api/v4/video/play_info",
                 json={

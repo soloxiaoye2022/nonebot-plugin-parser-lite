@@ -10,7 +10,7 @@ from ...utils.format import format_num
 
 from .model import TweetResult
 
-from ...utils.http_utils import get_async_client
+from httpx import AsyncClient
 
 from ..base import (
     BaseParser,
@@ -63,7 +63,7 @@ class XParser(BaseParser):
     async def _parse(self, searched: Match[str]) -> ParseResult:
         tweet_id = searched[1]
 
-        async with get_async_client() as client:
+        async with AsyncClient() as client:
             response = await client.post(
                 "https://easycomment.ai/api/twitter/v1/free/get-tweet-detail",
                 json={"pid": tweet_id},

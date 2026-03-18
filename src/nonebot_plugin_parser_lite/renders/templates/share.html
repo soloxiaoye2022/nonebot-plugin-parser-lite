@@ -611,11 +611,16 @@
     document.querySelectorAll('.images-grid.single .image-item').forEach(item => {
       const img = item.querySelector('img');
       if (img) {
-        const aspectRatio = img.height / img.width;
-        if (aspectRatio >= 0.9) {
-          item.classList.add('aspect-ratio-portrait');
-        } else {
-          item.classList.add('aspect-ratio-landscape');
+        img.onload = function () {
+          const aspectRatio = img.height / img.width;
+          if (aspectRatio >= 0.9) {
+            item.classList.add('aspect-ratio-portrait');
+          } else {
+            item.classList.add('aspect-ratio-landscape');
+          }
+        };
+        if (img.complete) {
+          img.onload();
         }
       }
     });

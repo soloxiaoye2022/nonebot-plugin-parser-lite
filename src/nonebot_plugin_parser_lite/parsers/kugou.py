@@ -5,7 +5,7 @@ import contextlib
 from re import Match
 from typing import ClassVar
 
-from ..utils.http_utils import get_async_client
+from httpx import AsyncClient
 
 from .base import (
     BaseParser,
@@ -128,7 +128,7 @@ class KuGouParser(BaseParser):
     async def _parse_kugou_share(self, searched: Match[str]):
         """解析酷狗分享链接"""
         share_url = searched.group(0)
-        async with get_async_client() as client:
+        async with AsyncClient() as client:
             response = await client.get(share_url)
             response.raise_for_status()
             html_text = response.text

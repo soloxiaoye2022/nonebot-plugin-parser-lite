@@ -2,9 +2,11 @@ import re
 from typing import ClassVar
 from urllib.parse import parse_qsl
 
+from ..cookie import ck2dict
+
 from ...utils.format import format_num
 
-from ...utils.http_utils import AsyncSession, get_async_client
+from httpx import AsyncClient
 from ..base import (
     BaseParser,
     Comment,
@@ -43,11 +45,6 @@ class RedNoteParser(BaseParser):
                 "sec-fetch-dest": "empty",
             }
         )
-        self.comment_headers = self.headers.copy()
-
-        if pconfig.xhs_ck:
-            self.comment_headers["cookie"] = pconfig.xhs_ck
-            self.ios_headers["cookie"] = pconfig.xhs_ck
 
     @handle("xhslink.com", r"xhslink\.com/[A-Za-z0-9._?%&+=/#@-]+")
     async def _parse_short_link(self, searched: re.Match[str]):
@@ -81,7 +78,10 @@ class RedNoteParser(BaseParser):
 
     async def parse_explore(self, url: str, note_id: str, xsec_token: str):
         """解析小红书笔记详情页"""
-        async with get_async_client(headers=self.ios_headers) as client:
+        async with AsyncClient(
+            headers=self.ios_headers,
+            cookies=ck2dict(pconfig.xhs_ck) if pconfig.xhs_ck else None,
+        ) as client:
             raw = await self._fetch_init_state(client, url)
 
         init_state = exploreDecoder.decode(raw)
@@ -91,7 +91,7 @@ class RedNoteParser(BaseParser):
         result.url = f"https://www.xiaohongshu.com/discovery/item/{note_id}?xsec_token={xsec_token}"
         return result
 
-    async def _fetch_init_state(self, client: AsyncSession, url: str) -> str:
+    async def _fetch_init_state(self, client: AsyncClient, url: str) -> str:
         """获取并提取页面中的 __INITIAL_STATE__ 原始 JSON 字符串"""
         response = await client.get(url)
         response.raise_for_status()

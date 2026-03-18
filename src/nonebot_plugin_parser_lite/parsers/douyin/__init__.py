@@ -4,7 +4,7 @@ from typing import ClassVar
 from msgspec import convert
 from nonebot import logger
 
-from ...utils.http_utils import get_async_client
+from httpx import AsyncClient
 from ...utils.browser import BROWSER
 
 from ..base import (
@@ -125,9 +125,9 @@ class DouyinParser(BaseParser):
         )
 
     async def parse_video_or_article(self, url: str):
-        async with get_async_client(
+        async with AsyncClient(
             headers=self.ios_headers,
-            allow_redirects=False,
+            follow_redirects=False,
         ) as client:
             response = await client.get(url)
             if response.status_code != 200:

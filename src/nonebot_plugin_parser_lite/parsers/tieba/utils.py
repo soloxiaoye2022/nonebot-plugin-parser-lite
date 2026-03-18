@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from ...utils.http_utils import get_async_client
+from httpx import AsyncClient
 from google.protobuf import descriptor_pb2, descriptor_pool
 from google.protobuf.message_factory import GetMessageClass
 from ..data import MediaContent, Comment
@@ -73,7 +73,7 @@ async def pack_req(data: bytes) -> bytes:
     )
 
     # 设置 Content-Type，带上固定 boundary
-    async with get_async_client() as client:
+    async with AsyncClient() as client:
         response = await client.post(
             "http://tiebac.baidu.com/c/f/pb/page",
             headers={
@@ -85,7 +85,7 @@ async def pack_req(data: bytes) -> bytes:
                 "Content-Type": f"multipart/form-data; boundary={boundary}",
             },
             params={"cmd": 302001},
-            data=body,
+            content=body,
         )
         return response.content
 

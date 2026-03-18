@@ -4,7 +4,7 @@ from typing import ClassVar
 from msgspec import convert
 
 from ...utils.format import format_num
-from ...utils.http_utils import get_async_client, AsyncSession
+from httpx import AsyncClient
 from ..base import BaseParser, Comment, MediaContent, Platform, PlatformEnum, handle
 from .model import AtlasData, BlogData, CommentData
 
@@ -18,7 +18,7 @@ class DuiTangParser(BaseParser):
     async def parse_blog(self, searched: Match[str]):
         blog_id = searched["blog_id"]
 
-        async with get_async_client() as client:
+        async with AsyncClient() as client:
             blog_data = await self._fetch_blog_detail(client, blog_id=blog_id)
             comment_data = await self._fetch_comments(
                 client,
@@ -51,7 +51,7 @@ class DuiTangParser(BaseParser):
     async def parse_atlas(self, searched: Match[str]):
         atlas_id = searched["atlas_id"]
 
-        async with get_async_client() as client:
+        async with AsyncClient() as client:
             atlas_data = await self._fetch_atlas_detail(client, atlas_id=atlas_id)
             comment_data = await self._fetch_comments(
                 client,
@@ -83,13 +83,13 @@ class DuiTangParser(BaseParser):
 
     async def _fetch_atlas_detail(
         self,
-        client: AsyncSession,
+        client: AsyncClient,
         atlas_id: str,
     ) -> AtlasData:
         """
         调用堆糖接口获取图集详情数据。该方法只负责请求和基础校验，并将结果转换为 AtlasData 对象。
 
-        :param client: 复用的 AsyncSession 实例。
+        :param client: 复用的 AsyncClient 实例。
         :param atlas_id: 图集 ID。
         :return: 转换后的图集详情数据。
         :raises ValueError: 当接口返回 message 不为 "success" 时抛出。
@@ -106,13 +106,13 @@ class DuiTangParser(BaseParser):
 
     async def _fetch_blog_detail(
         self,
-        client: AsyncSession,
+        client: AsyncClient,
         blog_id: str,
     ) -> BlogData:
         """
         调用堆糖接口获取博客图集详情数据。该方法只负责请求和基础校验，并将结果转换为 BlogData 对象。
 
-        :param client: 复用的 AsyncSession 实例。
+        :param client: 复用的 AsyncClient 实例。
         :param blog_id: 图集 ID。
         :return: 转换后的博客图集详情数据。
         :raises ValueError: 当接口返回 message 不为 "success" 时抛出。
@@ -132,7 +132,7 @@ class DuiTangParser(BaseParser):
 
     async def _fetch_comments(
         self,
-        client: AsyncSession,
+        client: AsyncClient,
         subject_id: int,
         subject_type: int,
         limit: int = 5,
@@ -140,7 +140,7 @@ class DuiTangParser(BaseParser):
         """
         调用堆糖接口获取图集评论数据。该方法支持限制返回条数，用于构建评论列表。
 
-        :param client: 复用的 AsyncSession 实例。
+        :param client: 复用的 AsyncClient 实例。
         :param subject_id: 图集 ID，作为评论主体 ID。
         :param subject_type: 图集类型，作为评论主体类型。
         :param limit: 拉取的评论条数上限。

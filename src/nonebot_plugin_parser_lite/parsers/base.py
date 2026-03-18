@@ -20,7 +20,6 @@ from ..exception import ParseException as ParseException
 from ..exception import SizeLimitException as SizeLimitException
 from ..exception import TipException as TipException
 from ..exception import ZeroSizeException as ZeroSizeException
-from ..utils.http_utils import get_async_client
 from .creator import (
     create_audio,
     create_author,
@@ -43,6 +42,7 @@ from .data import (
     Platform,
     Stats,
 )
+from httpx import AsyncClient
 
 P = ParamSpec("P")
 R = TypeVar("R")
@@ -211,9 +211,9 @@ class BaseParser:
         """获取重定向后的 URL, 单次重定向"""
 
         headers = headers or COMMON_HEADER.copy()
-        async with get_async_client(
+        async with AsyncClient(
             headers=headers,
-            allow_redirects=False,
+            follow_redirects=False,
         ) as client:
             response = await client.get(url)
             if response.status_code >= 400:
@@ -229,7 +229,7 @@ class BaseParser:
         """获取重定向后的 URL, 允许多次重定向"""
 
         headers = headers or COMMON_HEADER.copy()
-        async with get_async_client(headers=headers) as client:
+        async with AsyncClient(headers=headers) as client:
             response = await client.get(url)
             if response.status_code >= 400:
                 response.raise_for_status()
