@@ -71,13 +71,13 @@ class VideoData(Struct):
     def medias(self) -> list[MediaContent]:
         medias: list[MediaContent] = []
         if self.images:
-            for image in self.images:
-                medias.append(
-                    create_image(
-                        url=image.url_list[0].replace("playwm", "play"),
-                        extra_headers={"Referer": "https://www.douyin.com/"},
-                    )
+            medias.extend(
+                create_image(
+                    url=image.url_list[0].replace("playwm", "play"),
+                    extra_headers={"Referer": "https://www.douyin.com/"},
                 )
+                for image in self.images
+            )
         if self.video:
             medias.append(
                 create_video(

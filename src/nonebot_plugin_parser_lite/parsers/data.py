@@ -44,9 +44,7 @@ class VideoContent(MediaContent):
     """时长 单位: 秒"""
 
     async def get_cover_path(self) -> Path | None:
-        if self.cover is None:
-            return None
-        return await self.cover
+        return None if self.cover is None else await self.cover
 
     @property
     def display_duration(self) -> str:
@@ -135,9 +133,7 @@ class Author:
     """作者个性签名等"""
 
     async def get_avatar_path(self) -> Path | None:
-        if self.avatar is None:
-            return None
-        return await self.avatar
+        return None if self.avatar is None else await self.avatar
 
 
 @dataclass(repr=False, slots=True)

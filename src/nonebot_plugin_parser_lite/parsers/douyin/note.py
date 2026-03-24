@@ -4,7 +4,7 @@ from msgspec import Struct, field
 from ...utils.format import replace_placeholder_to_sticker
 
 from ..data import MediaContent
-from ..creator import create_image, create_live_photo
+from ..creator import create_audio, create_image, create_live_photo
 
 
 DOUYIN_PATTERN = re.compile(r"\[(?P<name>[^]]+)\]")
@@ -56,8 +56,17 @@ class Detail(Struct):
     images: list[Image] = field(default_factory=list)
 
 
+class PlayUrl(Struct):
+    uri: str
+
+
+class Music(Struct):
+    playUrl: PlayUrl
+
+
 class Aweme(Struct):
     detail: Detail
+    music: Music
 
     @property
     def content(self) -> list[MediaContent | str]:
@@ -78,6 +87,12 @@ class Aweme(Struct):
                         extra_headers={"Referer": "https://www.douyin.com/"},
                     )
                 )
+        if music := self.music.playUrl.uri:
+            content.append(
+                create_audio(
+                    url=music,
+                )
+            )
         return content
 
     @property
@@ -106,13 +121,13 @@ class Comment(Struct):
         content.extend(
             replace_placeholder_to_sticker(self.text, DOUYIN_PATTERN, "douyin")
         )
-        for image in self.imageList:
-            content.append(
-                create_image(
-                    url=image.originUrl.urlList[0],
-                    extra_headers={"Referer": "https://www.douyin.com/"},
-                )
+        content.extend(
+            create_image(
+                url=image.originUrl.urlList[0],
+                extra_headers={"Referer": "https://www.douyin.com/"},
             )
+            for image in self.imageList
+        )
         return content
 
 
