@@ -51,11 +51,7 @@ def _find_browser_from_playwright() -> str | None:
     else:
         base = home / ".cache" / "ms-playwright"
 
-    chromium_dirs = list(base.glob("chromium-*"))
-
-    # 按名称排序，通常最新的版本会在最后
-    chromium_dirs.sort()
-
+    chromium_dirs = sorted(base.glob("chromium-*"))
     for chromium_dir in reversed(chromium_dirs):
         if system == "Windows":
             exe_path = chromium_dir / "chrome-win" / "chrome.exe"
@@ -78,30 +74,35 @@ def _find_browser_from_playwright() -> str | None:
 
 
 def _find_browser_from_puppeteer() -> str | None:
-    """从 Puppeteer 默认目录寻找 Chromium."""
+    """从 Puppeteer 默认目录寻找 Chromium/Chrome."""
     home = Path.home()
-    if system == "Windows":
-        base = home / "AppData" / "Local" / "puppeteer"
-    elif system == "Darwin":
-        base = home / "Library" / "Caches" / "puppeteer"
-    else:
-        base = home / ".cache" / "puppeteer"
+    candidates: list[Path] = []
 
-    if not base.is_dir():
-        return None
-
-    # Windows / Linux: 查找 chrome.exe / chrome
-    target_name = "chrome.exe" if system == "Windows" else "chrome"
-    for sub in base.rglob(target_name):
-        if sub.is_file():
-            return str(sub)
-
-    # macOS: 查找 Chromium.app
     if system == "Darwin":
-        for app in base.rglob("Chromium.app"):
-            exe = app / "Contents" / "MacOS" / "Chromium"
-            if exe.is_file():
-                return str(exe)
+        candidates.append(home / "Library" / "Caches" / "puppeteer")
+    elif system == "Windows":
+        candidates.append(home / "AppData" / "Local" / "puppeteer")
+    else:
+        # 常见：~/.cache/puppeteer
+        candidates.append(home / ".cache" / "puppeteer")
+
+    target_name = "chrome.exe" if system == "Windows" else "chrome"
+
+    for base in candidates:
+        if not base.is_dir():
+            continue
+
+        # Windows / Linux: 查找 chrome.exe / chrome，版本号目录用 rglob 解决
+        for sub in base.rglob(target_name):
+            if sub.is_file():
+                return str(sub)
+
+        # macOS: 查找 Chromium.app
+        if system == "Darwin":
+            for app in base.rglob("Chromium.app"):
+                exe = app / "Contents" / "MacOS" / "Chromium"
+                if exe.is_file():
+                    return str(exe)
 
     return None
 
