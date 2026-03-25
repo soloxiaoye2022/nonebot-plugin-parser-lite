@@ -41,7 +41,7 @@ class StreamDownloader:
         url: str,
         file_name: str | None = None,
         ext_headers: dict[str, str] | None = None,
-        max_retries: int = 3,
+        max_retries: int = 1,
     ) -> Path:
         """
         :param url: 下载文件的链接地址
