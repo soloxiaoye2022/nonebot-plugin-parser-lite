@@ -144,7 +144,11 @@ class UniHelper:
         message_id = uniseg.get_message_id(event)
         target = uniseg.get_target(event)
 
-        if target.adapter in (SupportAdapter.onebot11, SupportAdapter.qq):
+        if target.adapter in (
+            SupportAdapter.onebot11,
+            SupportAdapter.qq,
+            SupportAdapter.milky,
+        ):
             emoji = cls.EMOJI_MAP[status][0]
         else:
             emoji = cls.EMOJI_MAP[status][1]
