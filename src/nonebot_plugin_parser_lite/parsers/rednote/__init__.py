@@ -15,8 +15,7 @@ from ..base import (
     pconfig,
 )
 from ..cookie import ck2dict
-from .discovery import NoteDetailWrapper
-from .discovery import decoder as discoveryDecoder
+from .discovery import NoteDetailWrapper, decoder as discoveryDecoder
 
 INITIAL_STATE = re.compile(
     pattern=r"window\.__INITIAL_STATE__=(.*?)</script>",
