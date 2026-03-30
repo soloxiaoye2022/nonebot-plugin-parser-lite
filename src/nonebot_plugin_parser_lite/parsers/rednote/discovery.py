@@ -4,11 +4,7 @@ from msgspec import Struct, field
 from msgspec.json import Decoder
 
 from ...utils.format import replace_placeholder_to_sticker
-from ..creator import (
-    create_image,
-    create_live_photo,
-    create_video,
-)
+from ..creator import create_image, create_live_photo, create_video
 from ..data import MediaContent
 
 REDNOTE_PATTERN = re.compile(r"\[(?P<name>[^]]+[a-zA-Z])\]")
@@ -174,7 +170,7 @@ class CommentUser(Struct):
 class Comment(Struct):
     user: CommentUser
     time: int
-    likeCount: int
+    likeViewCount: str
     text: str = field(name="content")
     ipLocation: str = ""
     pictures: list[CommentImage] = field(default_factory=list)

@@ -2,11 +2,8 @@ import re
 from typing import ClassVar
 from urllib.parse import parse_qsl
 
-from ..cookie import ck2dict
-
-from ...utils.format import format_num
-
 from httpx import AsyncClient
+
 from ..base import (
     BaseParser,
     Comment,
@@ -17,8 +14,9 @@ from ..base import (
     handle,
     pconfig,
 )
-from .discovery import NoteDetailWrapper, decoder as exploreDecoder
-
+from ..cookie import ck2dict
+from .discovery import NoteDetailWrapper
+from .discovery import decoder as discoveryDecoder
 
 INITIAL_STATE = re.compile(
     pattern=r"window\.__INITIAL_STATE__=(.*?)</script>",
@@ -57,13 +55,12 @@ class RedNoteParser(BaseParser):
         r"(?P<type>explore|search_result|discovery/item)/(?P<note_id>[0-9a-zA-Z]+)\?(?P<qs>[A-Za-z0-9._%&+=/#@-]+)",
     )
     async def _parse_common(self, searched: re.Match[str]):
-        xhs_domain = "https://www.xiaohongshu.com"
         # parse_type = searched["type"]
         note_id = searched["note_id"]
         qs = searched["qs"]
 
         # 原始 URL（保留所有 query 参数）
-        full_url = f"{xhs_domain}/discovery/item/{note_id}"
+        url = f"https://www.xiaohongshu.com/discovery/item/{note_id}"
 
         # 解析 query string，检查 xsec_token
         params_dict = dict(parse_qsl(qs, keep_blank_values=True))
@@ -72,36 +69,26 @@ class RedNoteParser(BaseParser):
             # TODO: 直接请求 xhs api获取数据，但是需要计算 sign
             raise ParseException("缺少 xsec_token, 无法解析小红书链接")
 
-        full_url += f"?xsec_token={xsec_token}&xsec_source=pc_share"
+        url += f"?xsec_token={xsec_token}&xsec_source=pc_share"
 
-        return await self.parse_explore(full_url, note_id, xsec_token)
-
-    async def parse_explore(self, url: str, note_id: str, xsec_token: str):
-        """解析小红书笔记详情页"""
         async with AsyncClient(
             headers=self.ios_headers,
             cookies=ck2dict(pconfig.xhs_ck) if pconfig.xhs_ck else None,
         ) as client:
-            raw = await self._fetch_init_state(client, url)
+            response = await client.get(url)
+            response.raise_for_status()
+            html = response.text
 
-        init_state = exploreDecoder.decode(raw)
+            if matched := INITIAL_STATE.search(html):
+                raw = matched[1].replace("undefined", "null")
+            else:
+                raise ParseException("小红书分享链接失效或内容已删除")
+        init_state = discoveryDecoder.decode(raw)
         note_data = init_state.noteData.data
 
         result = self._build_result(note_data)
         result.url = f"https://www.xiaohongshu.com/discovery/item/{note_id}?xsec_token={xsec_token}"
         return result
-
-    async def _fetch_init_state(self, client: AsyncClient, url: str) -> str:
-        """获取并提取页面中的 __INITIAL_STATE__ 原始 JSON 字符串"""
-        response = await client.get(url)
-        response.raise_for_status()
-        html = response.text
-
-        if matched := INITIAL_STATE.search(html):
-            # 将 undefined 替换为空字符串，避免 JSON 解析失败
-            return matched[1].replace("undefined", '""')
-
-        raise ParseException("小红书分享链接失效或内容已删除")
 
     def _build_result(self, note_data: NoteDetailWrapper):
         """从 note_data 构建最终解析结果"""
@@ -144,7 +131,7 @@ class RedNoteParser(BaseParser):
                 content=c.content,
                 timestamp=c.time // 1000,
                 stats=self.create_stats(
-                    like_count=format_num(c.likeCount),
+                    like_count=c.likeViewCount,
                     comment_count=str(len(c.subComments)),
                 ),
                 location=c.ipLocation,
@@ -160,7 +147,7 @@ class RedNoteParser(BaseParser):
                         content=sub.content,
                         timestamp=sub.time // 1000,
                         stats=self.create_stats(
-                            like_count=format_num(sub.likeCount),
+                            like_count=sub.likeViewCount,
                         ),
                     )
                 )
