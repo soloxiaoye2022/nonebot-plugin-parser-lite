@@ -29,14 +29,6 @@ def save_disabled_groups():
 _DISABLED_GROUPS_SET: set[str] = load_or_initialize_set()
 
 
-def get_group_key(session: Uninfo) -> str:
-    """获取群组的唯一标识符
-
-    由平台名称和会话场景 ID 组成，例如 `QQClient_123456789`。
-    """
-    return f"{session.scope}_{session.scene_path}"
-
-
 # Rule
 def is_enabled(session: Uninfo) -> bool:
     if f"{session.scope}_{session.user.id}" in pconfig.blacklist_users:
@@ -45,8 +37,7 @@ def is_enabled(session: Uninfo) -> bool:
     if session.scene.is_private:
         return True
     # 群聊：看这个群 key 是否在关闭列表里
-    group_key = get_group_key(session)
-    return group_key not in _DISABLED_GROUPS_SET
+    return f"{session.scope}_{session.scene_path}" not in _DISABLED_GROUPS_SET
 
 
 @on_command(
@@ -54,7 +45,7 @@ def is_enabled(session: Uninfo) -> bool:
 ).handle()
 async def _(matcher: Matcher, session: Uninfo):
     """开启解析"""
-    group_key = get_group_key(session)
+    group_key = f"{session.scope}_{session.scene_path}"
     if group_key in _DISABLED_GROUPS_SET:
         _DISABLED_GROUPS_SET.remove(group_key)
         save_disabled_groups()
@@ -68,7 +59,7 @@ async def _(matcher: Matcher, session: Uninfo):
 ).handle()
 async def _(matcher: Matcher, session: Uninfo):
     """关闭解析"""
-    group_key = get_group_key(session)
+    group_key = f"{session.scope}_{session.scene_path}"
     if group_key not in _DISABLED_GROUPS_SET:
         _DISABLED_GROUPS_SET.add(group_key)
         save_disabled_groups()
