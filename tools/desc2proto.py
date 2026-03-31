@@ -1,5 +1,10 @@
 import google.protobuf.descriptor_pb2 as pb2
 from google.protobuf.descriptor import FieldDescriptor
+from google.protobuf.descriptor_pb2 import (
+    global___EnumDescriptorProto,
+    global___DescriptorProto,
+    global___FieldDescriptorProto,
+)
 
 
 def run_ultimate_restore(desc_path, output_proto):
@@ -26,20 +31,20 @@ def run_ultimate_restore(desc_path, output_proto):
         FieldDescriptor.TYPE_SINT64: "sint64",
     }
 
-    def get_clean_type(fld):
+    def get_clean_type(fld: global___FieldDescriptorProto):
         """剥离包名，获取类名"""
         if fld.type_name:
             return fld.type_name.split(".")[-1]
         return TYPE_STR.get(fld.type, "string")
 
-    def process_enum(enum, indent=""):
+    def process_enum(enum: global___EnumDescriptorProto, indent=""):
         lines = [f"{indent}enum {enum.name} {{"]
         for v in enum.value:
             lines.append(f"{indent}  {v.name} = {v.number};")
         lines.append(f"{indent}}}")
         return lines
 
-    def process_msg(msg, indent=""):
+    def process_msg(msg: global___DescriptorProto, indent=""):
         lines = [f"{indent}message {msg.name} {{"]
 
         # 1. 预处理：识别 MapEntry
@@ -60,7 +65,7 @@ def run_ultimate_restore(desc_path, output_proto):
             lines.append("")
 
         # 3. 字段处理 (包含 Oneof 分组逻辑)
-        oneof_groups = {}
+        oneof_groups: dict[int, list[global___FieldDescriptorProto]] = {}
 
         for fld in msg.field:
             if fld.HasField("oneof_index"):
@@ -74,11 +79,15 @@ def run_ultimate_restore(desc_path, output_proto):
                 lines.append(f"{indent}  map<{k}, {v}> {fld.name} = {fld.number};")
             else:
                 # 普通字段或 Repeated 字段
-                label = "repeated " if fld.label == FieldDescriptor.LABEL_REPEATED else ""
+                label = (
+                    "repeated " if fld.label == FieldDescriptor.LABEL_REPEATED else ""
+                )
                 # Proto3 显式 Optional 处理 (如果 desc 记录了该特性)
                 if hasattr(fld, "proto3_optional") and fld.proto3_optional:
                     label = "optional "
-                lines.append(f"{indent}  {label}{get_clean_type(fld)} {fld.name} = {fld.number};")
+                lines.append(
+                    f"{indent}  {label}{get_clean_type(fld)} {fld.name} = {fld.number};"
+                )
 
         # 4. 写入 Oneof 组
         for idx, fields in oneof_groups.items():
@@ -115,7 +124,9 @@ def run_ultimate_restore(desc_path, output_proto):
                 out_t = m.output_type.split(".")[-1]
                 c_stream = "stream " if m.client_streaming else ""
                 s_stream = "stream " if m.server_streaming else ""
-                output.append(f"  rpc {m.name} ({c_stream}{in_t}) returns ({s_stream}{out_t});")
+                output.append(
+                    f"  rpc {m.name} ({c_stream}{in_t}) returns ({s_stream}{out_t});"
+                )
             output.append("}\n")
 
     # 写入文件
