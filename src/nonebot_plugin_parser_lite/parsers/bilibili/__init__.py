@@ -207,13 +207,11 @@ class BilibiliParser(BaseParser):
                     v_url,
                     a_url,
                     file_name=f"{video_info.bvid}-{page_num}",
-                    ext_headers=self.headers,
                 )
             else:
                 return await DOWNLOADER.streamd(
                     v_url,
                     file_name=f"{video_info.bvid}-{page_num}.mp4",
-                    ext_headers=self.headers,
                 )
 
         # 创建视频下载内容（传递下载函数而非立即执行）
@@ -221,7 +219,6 @@ class BilibiliParser(BaseParser):
             url_or_task=download_video,
             cover_url=page_info.cover,
             duration=page_info.duration,
-            ext_headers={"Referer": url},
         )
 
         # 提取统计数据
@@ -904,8 +901,8 @@ class BilibiliParser(BaseParser):
         """从 Bilibili API 获取评论数据，优先热评，失败时兜底普通评论"""
         # 构造请求头（带 cookie）
         request_headers = self.headers.copy()
-        if self._credential:
-            if cookies := self._credential.get_cookies():
+        if ck := await self.credential:
+            if cookies := ck.get_cookies():
                 request_headers["Cookie"] = "; ".join(
                     f"{k}={v}" for k, v in cookies.items()
                 )
