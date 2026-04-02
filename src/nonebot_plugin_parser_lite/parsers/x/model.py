@@ -61,9 +61,9 @@ class Tweet(Struct):
     id_str: str
     """推文id"""
     created_at: str
-    mediaDetails: list[Media]
     user: User
     full_text: str = field(name="text")
+    mediaDetails: list[Media] = field(default_factory=list)
     quoted_tweet: "Tweet | None" = None
     """引用推文"""
     parent: "Tweet | None" = None
