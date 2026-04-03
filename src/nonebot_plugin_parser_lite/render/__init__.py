@@ -343,6 +343,8 @@ class Renderer:
                 "base_url": f"file://{self.templates_dir}",
             },
             filters={"safe_path": safe_path},
+            type="jpeg",
+            quality=85,
         )
 
     async def _resolve_parse_result(self, result: ParseResult) -> dict[str, Any]:
@@ -423,7 +425,7 @@ class Renderer:
         :param raw: 图片字节
         """
 
-        file_name = f"{uuid.uuid4().hex}.png"
+        file_name = f"{uuid.uuid4().hex}.jpeg"
         image_path = pconfig.cache_dir / file_name
         async with aiofiles.open(image_path, "wb+") as f:
             await f.write(raw)
