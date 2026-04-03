@@ -34,7 +34,7 @@ __plugin_meta__ = PluginMetadata(
 )
 
 
-@scheduler.scheduled_job("cron", hour=1, minute=0, id="parser-clean-local-cache")
+@scheduler.scheduled_job("interval", hours=1, id="parser-clean-local-cache")
 async def clean_plugin_cache():
     try:
         files = [f for f in pconfig.cache_dir.iterdir() if f.is_file()]
