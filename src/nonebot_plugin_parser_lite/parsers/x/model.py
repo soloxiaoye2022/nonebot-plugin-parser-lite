@@ -20,7 +20,6 @@ class VideoVariant(Struct):
 
 
 class VideoInfo(Struct):
-    duration_millis: int
     variants: list[VideoVariant]
 
 
