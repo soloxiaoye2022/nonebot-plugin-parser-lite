@@ -328,8 +328,6 @@ class Renderer:
             template_name=template_name,
             templates={
                 "result": template_data,
-                "rendering_time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "bot_name": _nickname,
             },
             pages={
                 "viewport": {"width": 620, "height": 100},
@@ -362,6 +360,8 @@ class Renderer:
                 "id": result.author.id,
                 "avatar_path": await safe_src(result.author, "get_avatar_path"),
             },
+            "rendering_time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "bot_name": _nickname,
         }
 
         if result.repost:

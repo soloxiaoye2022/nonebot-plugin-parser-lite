@@ -51,6 +51,11 @@
 - 通用的基础模板，便于拓展自定义
 - 富文本内容渲染支持
 
+<details>
+<summary>渲染效果</summary>
+<img width="1240" height="4170" alt="3be84ec632a32a8e3b7b0ce7d6c30259" src="https://github.com/user-attachments/assets/5bd1112a-734b-4c82-afbd-fa1e8d59ae37" />
+</details>
+
 ## ⚙️ 配置
 
 > [!NOTE]
