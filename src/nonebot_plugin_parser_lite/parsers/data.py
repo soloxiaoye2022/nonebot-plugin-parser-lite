@@ -214,6 +214,8 @@ class ParseResult:
     """统计信息"""
     comments: list[Comment] = field(default_factory=list)
     """评论列表"""
+    ai_summary: str | None = None
+    """AI摘要"""
     extra: dict[str, Any] = field(default_factory=dict)
     """额外信息"""
     repost: "ParseResult | None" = None
@@ -285,3 +287,5 @@ class ParseResultKwargs(TypedDict, total=False):
     """统计信息"""
     comments: list[Comment]
     """评论列表"""
+    ai_summary: str | None
+    """AI摘要"""

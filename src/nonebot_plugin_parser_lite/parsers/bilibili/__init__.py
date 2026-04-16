@@ -263,7 +263,6 @@ class BilibiliParser(BaseParser):
 
         # 构造 extra_data
         extra_data = {
-            "info": ai_summary,
             "type": "video",
             "type_tag": "视频",
             "type_icon": "fa-circle-play",
@@ -280,6 +279,7 @@ class BilibiliParser(BaseParser):
             stats=stats,
             comments=processed_comments,
             extra=extra_data,
+            ai_summary=ai_summary,
         )
 
     async def parse_dynamic_or_opus(self, dynamic_id: int):

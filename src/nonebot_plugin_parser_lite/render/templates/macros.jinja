@@ -1,6 +1,7 @@
 {# 1. 统计宏（Tailwind 样式） #}
 {% macro render_stats(stats) %}
-    <div class="flex items-center justify-around py-5">
+    <div class="grid gap-y-3 gap-x-4 px-8 pt-4 pb-3"
+         style="grid-template-columns: repeat(auto-fit, minmax(100px, 1fr))">
         {% if stats.view_count and stats.view_count != '-' %}
             <div class="text-center flex items-center justify-center space-x-1.5">
                 <i class="fa-solid fa-eye text-lime-500 text-xl"></i>
@@ -298,6 +299,23 @@
             {% if result.title %}<p class="title text-lg font-extrabold text-gray-800">{{ result.title }}</p>{% endif %}
             <div class="text-gray-800 text-base leading-relaxed">{{ render_content_items(result.content) }}</div>
         </div>
+        {# AI 总结 / 锐评 #}
+        {% if result.ai_summary %}
+            <div class="px-8 mt-2 mb-4">
+                <div class="h-px bg-slate-100"></div>
+            </div>
+            <div class="px-8 pb-4">
+                <div class="flex items-start space-x-2.5 rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5">
+                    <div class="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-indigo-500 text-white shadow-sm">
+                        <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400 mb-0.5">AI 总结</div>
+                        <p class="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{{ result.ai_summary }}</p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
         {# 转发内容：嵌套一层卡片，用 is_repost=True #}
         {% if result.repost %}
             <div class="quoue shadow-sm m-8 mt-0 rounded-xl outline-1 outline-slate-200">

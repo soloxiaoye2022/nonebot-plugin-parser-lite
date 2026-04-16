@@ -360,6 +360,7 @@ class Renderer:
                 "id": result.author.id,
                 "avatar_path": await safe_src(result.author, "get_avatar_path"),
             },
+            "ai_summary": result.ai_summary,
             "rendering_time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "bot_name": _nickname,
         }

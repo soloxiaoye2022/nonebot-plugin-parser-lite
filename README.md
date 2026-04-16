@@ -162,4 +162,5 @@ plite_max_comments=5
 - [parse-video-py](https://github.com/wujunwei928/parse-video-py) Python短视频去水印爬虫
 - [Spider_XHS](https://github.com/cv-cat/Spider_XHS) 小红书爬虫数据采集，小红书全域运营解决方案
 - [aiotieba](https://github.com/lumina37/aiotieba) 贴吧接口合集✨可用于工具箱/吧务管理/数据采集
+- [Uesugi Hanako](https://github.com/negichan)
 - 致2026年的你们
