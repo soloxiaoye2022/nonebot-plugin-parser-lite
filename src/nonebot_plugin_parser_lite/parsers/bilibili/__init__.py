@@ -1045,80 +1045,79 @@ class BilibiliParser(BaseParser):
                 )
 
         async with AsyncClient() as client:
-            # 1. 热评接口
-            hot_url = "https://api.bilibili.com/x/v2/reply/hot"
-            hot_params = {
-                "oid": oid,
-                "type": type,
-                "root": 0,
-                "ps": 10,
-                "pn": 1,
-            }
             try:
-                comments = await self._request_comment_api(
-                    client,
-                    api_url=hot_url,
-                    params=hot_params,
+                response = await client.get(
+                    "https://api.bilibili.com/x/v2/reply",
+                    params={
+                        "oid": oid,
+                        "type": type,
+                        "sort": 1,  # 按点赞数排序
+                        "ps": 7,
+                        "pn": 1,
+                        "nohot": 0,
+                    },
                     headers=request_headers,
-                    desc="[Bilibili] 热评API",
                 )
-                if comments:
-                    return comments
-            except Exception as e:
-                logger.error(f"[Bilibili] 获取热评失败: {e!r}")
+                response.raise_for_status()
+                data = response.json()
+                logger.debug(f"bili评论返回: {data}")
 
-            # 2. 兜底普通评论接口
-            fallback_url = "https://api.bilibili.com/x/v2/reply"
-            fallback_params = {
-                "oid": oid,
-                "type": type,
-                "sort": 1,  # 按点赞数排序
-                "ps": 20,
-                "pn": 1,
-            }
-            try:
-                comments = await self._request_comment_api(
-                    client,
-                    api_url=fallback_url,
-                    params=fallback_params,
-                    headers=request_headers,
-                    desc="[Bilibili] 兜底评论API",
+                if data.get("code") != 0 or not data.get("data"):
+                    logger.debug(
+                        f"bili评论返回数据为空或错误: code={data.get('code')}, message={data.get('message')}"
+                    )
+                    return []
+
+                data_root = data["data"] or {}
+                upper_top = data_root.get("upper", {}).get("top")
+                hots: list[dict[str, Any]] = data_root.get("hots") or []
+                replies_raw: list[dict[str, Any]] = data_root.get("replies") or []
+
+                upper_list: list[dict[str, Any]] = [upper_top] if upper_top else []
+
+                def _append_unique(
+                    src: list[dict[str, Any]], out: list[dict[str, Any]], seen: set[int]
+                ) -> None:
+                    for item in src:
+                        try:
+                            rpid: int = item["rpid"]
+                        except Exception:
+                            # 没有 rpid 的异常项直接跳过
+                            continue
+                        if rpid in seen:
+                            continue
+                        seen.add(rpid)
+                        out.append(item)
+
+                merged: list[dict[str, Any]] = []
+                seen_rpids: set[int] = set()
+
+                has_upper = bool(upper_list)
+                has_hots = bool(hots)
+
+                if has_upper and has_hots:
+                    # 置顶 + 热评
+                    _append_unique(upper_list, merged, seen_rpids)
+                    _append_unique(hots, merged, seen_rpids)
+                elif has_upper and not has_hots:
+                    # 置顶 + 普通
+                    _append_unique(upper_list, merged, seen_rpids)
+                    _append_unique(replies_raw, merged, seen_rpids)
+                elif has_hots and not has_upper:
+                    # 只有热评
+                    _append_unique(hots, merged, seen_rpids)
+                else:
+                    # 没有置顶也没有热评 → 普通
+                    _append_unique(replies_raw, merged, seen_rpids)
+
+                logger.debug(
+                    f"bili获得评论: upper={len(upper_list)}, hots={len(hots)}, replies={len(replies_raw)}, merged={len(merged)}",
                 )
-                # 如果兜底接口返回空列表，也视作“没有评论”，而不是错误
-                return comments
+                return self._process_reply_list(merged)
+
             except Exception as e:
-                logger.error(f"[Bilibili] 获取兜底评论失败: {e!r}")
+                logger.error(f"[Bilibili] 获取评论失败: {e!r}")
                 return []
-
-    async def _request_comment_api(
-        self,
-        client: AsyncClient,
-        *,
-        api_url: str,
-        params: dict[str, Any],
-        headers: dict[str, str],
-        desc: str,
-    ) -> list[Comment]:
-        """请求指定评论 API，并解析为标准评论列表格式。"""
-        logger.debug(f"{desc}: url={api_url}, 参数={params}")
-        response = await client.get(api_url, params=params, headers=headers)
-        response.raise_for_status()
-        data = response.json()
-        logger.debug(f"{desc} 返回: {data}")
-
-        if data.get("code") != 0 or not data.get("data"):
-            logger.debug(
-                f"{desc} 返回数据为空或错误: code={data.get('code')}, message={data.get('message')}"
-            )
-            return []
-
-        replies = data["data"].get("replies")
-        if not isinstance(replies, list):
-            logger.debug(f"{desc} 返回的 replies 不是列表类型")
-            return []
-
-        logger.debug(f"{desc} 获得评论: {len(replies)} 条")
-        return self._process_reply_list(replies)
 
     def _format_content_with_emote(
         self, raw: str, emote: dict[str, Any]
