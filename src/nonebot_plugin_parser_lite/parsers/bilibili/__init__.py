@@ -2,6 +2,7 @@ import asyncio
 import contextlib
 import json
 import re
+import aiofiles
 from collections.abc import AsyncGenerator
 from re import Match
 from typing import Any, ClassVar
@@ -12,6 +13,7 @@ from bilibili_api.dynamic import Dynamic
 from bilibili_api.favorite_list import get_video_favorite_list_content
 from bilibili_api.live import LiveRoom
 from bilibili_api.login_v2 import QrCodeLogin, QrCodeLoginEvents
+from bilibili_api.utils.network import get_buvid
 from bilibili_api.opus import Opus
 from bilibili_api.video import (
     AudioStreamDownloadURL,
@@ -966,12 +968,13 @@ class BilibiliParser(BaseParser):
         logger.debug(f"音频流质量: {audio_stream.audio_quality.name}")
         return video_stream.url, audio_stream.url
 
-    def _save_credential(self):
+    async def _save_credential(self):
         """存储哔哩哔哩登录凭证"""
         if self._credential is None:
             return
 
-        self._cookies_file.write_text(json.dumps(self._credential.get_cookies()))
+        async with aiofiles.open(self._cookies_file, "w", encoding="utf-8") as f:
+            await f.write(json.dumps(await self._credential.get_buvid_cookies()))
 
     async def login_with_qrcode(self) -> bytes:
         """通过二维码登录获取哔哩哔哩登录凭证"""
@@ -991,7 +994,7 @@ class BilibiliParser(BaseParser):
                 case QrCodeLoginEvents.DONE:
                     yield "登录成功"
                     self._credential = self._qr_login.get_credential()
-                    self._save_credential()
+                    await self._save_credential()
                     await self.load_black_list()
                     break
                 case QrCodeLoginEvents.CONF:
@@ -1014,7 +1017,10 @@ class BilibiliParser(BaseParser):
         """
         if self._cookies_file.exists():
             try:
-                cookies_raw = self._cookies_file.read_text()
+                async with aiofiles.open(
+                    self._cookies_file, encoding="utf-8"
+                ) as f:
+                    cookies_raw = await f.read()
                 cookies = json.loads(cookies_raw)
                 self._credential = Credential.from_cookies(cookies)
                 return
@@ -1030,7 +1036,7 @@ class BilibiliParser(BaseParser):
         if await credential.check_valid():
             logger.info(f"`parser_bili_ck` 有效, 保存到 {self._cookies_file}")
             self._credential = credential
-            self._save_credential()
+            await self._save_credential()
         else:
             logger.warning("`parser_bili_ck` 已过期, 请更新 ck")
 
@@ -1249,9 +1255,13 @@ class BilibiliParser(BaseParser):
         if await self._credential.check_refresh():
             logger.info("哔哩哔哩凭证需要刷新")
             if self._credential.has_ac_time_value() and self._credential.has_bili_jct():
+                if not (
+                    self._credential.has_buvid3() and self._credential.has_buvid4()
+                ):
+                    self._credential.buvid3, self._credential.buvid4 = await get_buvid()
                 await self._credential.refresh()
                 logger.info(f"哔哩哔哩凭证刷新成功, 保存到 {self._cookies_file}")
-                self._save_credential()
+                await self._save_credential()
             else:
                 logger.warning(
                     "哔哩哔哩凭证刷新需要包含 `SESSDATA`, `ac_time_value` 项"
