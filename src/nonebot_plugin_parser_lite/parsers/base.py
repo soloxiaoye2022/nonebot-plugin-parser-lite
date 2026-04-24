@@ -128,6 +128,13 @@ class BaseParser:
         self.ios_headers = IOS_HEADER.copy()
         self.android_headers = ANDROID_HEADER.copy()
         self.timeout = COMMON_TIMEOUT
+        self.httpx = AsyncClient(
+            headers=self.headers, timeout=self.timeout, follow_redirects=True
+        )
+
+    async def aclose(self) -> None:
+        """关闭底层 HTTP 客户端，释放连接等资源。"""
+        await self.httpx.aclose()
 
     def __init_subclass__(cls, **kwargs):
         """自动注册子类到 _registry"""
@@ -401,9 +408,7 @@ class BaseParser:
         :param ext_headers: 额外请求头
         """
 
-        return create_sticker(
-            url=url, size=size, desc=desc, ext_headers=ext_headers
-        )
+        return create_sticker(url=url, size=size, desc=desc, ext_headers=ext_headers)
 
     def create_live_photo(
         self,
