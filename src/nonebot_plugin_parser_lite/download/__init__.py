@@ -1,9 +1,10 @@
 import asyncio
 import contextlib
+from functools import partial
 import hashlib
 import os
 from pathlib import Path
-from typing import Generator
+from typing import Callable, Generator
 from urllib.parse import urljoin
 
 import aiofiles
@@ -13,9 +14,16 @@ from ..constants import COMMON_HEADER, DOWNLOAD_TIMEOUT
 from ..exception import DownloadException, SizeLimitException, ZeroSizeException
 from ..utils.common import generate_file_name, make_filename, safe_unlink
 from ..utils.ffmpeg import FFmpeg
-from ..utils.progress import ProgressManager as PM, Progress, TaskID
 from httpx import AsyncClient, Response
 from .task import auto_task
+from rich.progress import (
+    Progress,
+    BarColumn,
+    DownloadColumn,
+    TransferSpeedColumn,
+    TimeElapsedColumn,
+    TimeRemainingColumn,
+)
 
 
 class StreamDownloader:
@@ -113,7 +121,7 @@ class StreamDownloader:
         url: str,
     ) -> None:
         """将 HTTP 流写入文件，并处理进度条与实际大小限制。"""
-        with self._progress_with_task(desc, declared_length) as (bar, task):
+        with self.rich_progress(desc, declared_length) as update_progress:
             downloaded_bytes = 0
 
             async with aiofiles.open(file_path, "wb") as file:
@@ -126,7 +134,7 @@ class StreamDownloader:
                     downloaded_bytes += chunk_len
 
                     # 更新进度条（无 Content-Length 时显示“已下载字节数”）
-                    bar.advance(task, chunk_len)
+                    update_progress(advance=chunk_len)
 
                     # 无 Content-Length 时，按实际已下载大小做限制
                     if declared_length is None:
@@ -239,8 +247,7 @@ class StreamDownloader:
         async def download_single_ts(
             ts_url: str,
             f: aiofiles.threadpool.binary.AsyncBufferedIOBase,
-            bar: Progress,
-            task_id: TaskID,
+            update_progress: Callable[..., None],
             max_retries: int = 3,
         ) -> None:
             for retry in range(max_retries):
@@ -263,7 +270,7 @@ class StreamDownloader:
 
                             await f.write(chunk)
                             inc = len(chunk)
-                            bar.advance(task_id, inc)
+                            update_progress(advance=inc)
 
                             # 基于文件当前实际大小判断总大小限制
                             current_bytes = await f.tell()
@@ -284,10 +291,10 @@ class StreamDownloader:
                     await asyncio.sleep(1)
             raise DownloadException(f"多次重试仍失败的 ts 片段: {ts_url}")
 
-        with self._progress_with_task(video_name) as (bar, task_id):
+        with self.rich_progress(video_name) as update_progress:
             async with aiofiles.open(temp_ts_path, "wb") as f:
                 for ts_url in ts_urls:
-                    await download_single_ts(ts_url, f, bar, task_id)
+                    await download_single_ts(ts_url, f, update_progress)
 
                 # 所有 ts 下载完成后，取一次实际文件大小返回
                 final_size = await f.tell()
@@ -490,27 +497,25 @@ class StreamDownloader:
 
     @staticmethod
     @contextlib.contextmanager
-    def _progress_with_task(
+    def rich_progress(
         desc: str, total: int | None = None
-    ) -> Generator[tuple[Progress, TaskID], None, None]:
+    ) -> Generator[Callable[..., None], None, None]:
         """
         :param desc: 进度条描述
         :param total: 进度条总长度
-        :return: 进度条和任务 ID
+        :return: progress.update
         """
-        PM.start_task()
-        progress = PM.get_progress()
-        try:
-            task_id = progress.add_task(f"[green]{desc}", total=total)
-        except Exception:
-            PM.stop_task()
-            raise
-
-        try:
-            yield progress, task_id
-        finally:
-            progress.remove_task(task_id)
-            PM.stop_task()
+        with Progress(
+            "[progress.description]{task.description}",
+            BarColumn(),
+            "[progress.percentage]{task.percentage:>3.0f}%",
+            DownloadColumn(),
+            TransferSpeedColumn(),
+            TimeElapsedColumn(),
+            TimeRemainingColumn(),
+        ) as progress:
+            task_id = progress.add_task(description=desc, total=total)
+            yield partial(progress.update, task_id)
 
 
 DOWNLOADER: StreamDownloader = StreamDownloader()
