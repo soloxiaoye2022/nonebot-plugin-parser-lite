@@ -4,8 +4,6 @@ from datetime import datetime
 from dataclasses import field, dataclass
 from collections.abc import Sequence
 
-from ..utils.format import fmt_duration
-
 from ..utils.ffmpeg import FFmpeg
 
 from ..download.task import DownloadTaskWrapper
@@ -50,7 +48,16 @@ class VideoContent(MediaContent):
 
     @property
     def display_duration(self) -> str:
-        return fmt_duration(self.duration)
+        total_seconds = int(self.duration)
+        if total_seconds <= 0:
+            return "0:00"
+
+        minutes, seconds = divmod(total_seconds, 60)
+        if minutes < 60:
+            return f"{minutes}:{seconds:02d}"
+
+        hours, minutes = divmod(minutes, 60)
+        return f"{hours}:{minutes:02d}:{seconds:02d}"
 
 
 @dataclass(repr=False, slots=True)

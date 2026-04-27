@@ -2,7 +2,6 @@ from collections.abc import Callable
 import re
 from typing import Literal
 
-from ..parsers.creator import create_sticker
 from ..parsers.data import MediaContent
 
 
@@ -25,6 +24,7 @@ def replace_placeholder_to_sticker(
     """
     if "[" not in text or "]" not in text or not placeholder_pattern.search(text):
         return [text]
+    from ..parsers.creator import create_sticker
 
     result: list[MediaContent | str] = []
     last_pos = 0
@@ -60,18 +60,3 @@ def format_num(num: int | None) -> str:
     if num is None:
         return "-"
     return str(num) if num < 10000 else f"{num / 10000:.1f}万"
-
-
-def fmt_duration(duration: float) -> str:
-    """格式化媒体时长（秒）为 mm:ss 或 hh:mm:ss。"""
-    total_seconds = int(duration)
-    if total_seconds <= 0:
-        return "0:00"
-
-    minutes, seconds = divmod(total_seconds, 60)
-    if minutes < 60:
-        return f"{minutes}:{seconds:02d}"
-
-    hours, minutes = divmod(minutes, 60)
-    return f"{hours}:{minutes:02d}:{seconds:02d}"
-
