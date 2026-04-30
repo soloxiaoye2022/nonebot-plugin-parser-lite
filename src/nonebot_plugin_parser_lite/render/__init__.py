@@ -302,15 +302,7 @@ class Renderer:
         #     encoding="utf8",
         # ) as f:  # noqa: E501
         #     f.write(
-        #         await template.render_async(
-        #             **{
-        #                 "result": template_data,
-        #                 "rendering_time": datetime.datetime.now().strftime(
-        #                     "%Y-%m-%d %H:%M:%S"
-        #                 ),
-        #                 "bot_name": _nickname,
-        #             }
-        #         )
+        #         await template.render_async(result=template_data)
         #     )
 
         return await template_to_pic(
