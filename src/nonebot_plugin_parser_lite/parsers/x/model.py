@@ -55,14 +55,14 @@ class User(Struct):
 
 
 class Tweet(Struct):
-    favorite_count: int
-    """点心数"""
     id_str: str
     """推文id"""
     created_at: str
     user: User
     full_text: str = field(name="text")
     mediaDetails: list[Media] = field(default_factory=list)
+    favorite_count: int = field(default=0)
+    """点心数"""
     quoted_tweet: "Tweet | None" = None
     """引用推文"""
     parent: "Tweet | None" = None
