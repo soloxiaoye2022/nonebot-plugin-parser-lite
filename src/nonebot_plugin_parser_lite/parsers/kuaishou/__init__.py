@@ -70,7 +70,7 @@ class KuaiShouParser(BaseParser):
                 self.create_video(
                     url_or_task=video_url,
                     cover_url=cover_url,
-                    duration=photo.duration,
+                    duration=photo.duration // 1000,
                 )
             )
 
