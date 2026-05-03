@@ -4,36 +4,32 @@ from typing import ClassVar
 from msgspec import convert
 
 from ...utils.format import format_num
-
-
-from .model import TweetResult
-
-
 from ..base import (
     BaseParser,
+    MediaContent,
+    ParseException,
+    ParseResult,
+    Platform,
     PlatformEnum,
     handle,
-    Platform,
-    ParseResult,
-    ParseException,
-    MediaContent,
 )
+from .model import TweetRaw
 
 
 class XParser(BaseParser):
     platform: ClassVar[Platform] = Platform(name=PlatformEnum.X, display_name="X")
 
-    def collect_data(self, tweet: TweetResult, is_repost: bool = False) -> ParseResult:
-        result = tweet.result
-        legacy = result.legacy
+    def collect_data(self, raw: TweetRaw, is_repost: bool = False) -> ParseResult:
+        tweet = raw.result.as_tweet
+        legacy = tweet.legacy
 
         content: list[MediaContent | str] = [legacy.text]
         content.extend(legacy.medias)
 
-        user = result.core.user_results.result.legacy
+        user = tweet.core.user_results.result.legacy
 
         repost = None
-        repost_status = result.quoted_status_result or result.retweeted_status_result
+        repost_status = tweet.quoted_status_result or tweet.retweeted_status_result
         if not is_repost and repost_status:
             repost = self.collect_data(repost_status, True)
 
@@ -47,13 +43,13 @@ class XParser(BaseParser):
                 id=user.screen_name,
             ),
             stats=self.create_stats(
-                view_count=format_num(int(result.views.count)),
+                view_count=format_num(int(tweet.views.count)),
                 like_count=format_num(legacy.favorite_count),
                 comment_count=format_num(legacy.reply_count),
                 collect_count=format_num(legacy.bookmark_count),
                 share_count=format_num(legacy.quote_count + legacy.retweet_count),
             ),
-            url=f"https://x.com/{user.screen_name}/status/{result.rest_id}",
+            url=f"https://x.com/{user.screen_name}/status/{tweet.rest_id}",
             repost=repost,
         )
 
@@ -76,5 +72,5 @@ class XParser(BaseParser):
             "instructions"
         ][1]["entries"][0]["content"]["itemContent"]["tweet_results"]
 
-        tweet = convert(tweet_raw, TweetResult)
+        tweet = convert(tweet_raw, TweetRaw)
         return self.collect_data(tweet)

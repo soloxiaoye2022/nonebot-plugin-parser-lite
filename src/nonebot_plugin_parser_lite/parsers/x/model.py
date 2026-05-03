@@ -2,8 +2,8 @@ from datetime import datetime
 
 from msgspec import Struct, field
 
-from ..data import MediaContent
 from ..creator import create_image, create_video
+from ..data import MediaContent
 
 
 class Views(Struct):
@@ -50,7 +50,12 @@ class UserLegacy(Struct):
     """用户名"""
     followers_count: int
     """粉丝数"""
-    profile_image_url_https: str
+    profile_image_url_https: str = field(
+        default="https://abs.twimg.com/sticky/default_profile_images/default_profile_bigger.png"
+    )
+    """头像"""
+    profile_banner_url: str = field(default="")
+    """banner图片"""
 
     @property
     def avatar_url(self):
@@ -129,6 +134,12 @@ class TweetLegacy(Struct):
 
 class UserData(Struct):
     legacy: UserLegacy
+    is_blue_verified: bool
+    """蓝标认证"""
+    id: str
+    """用户id"""
+    rest_id: str
+    """用户数字id"""
 
 
 class UserResult(Struct):
@@ -146,11 +157,41 @@ class Tweet(Struct):
     views: Views
     rest_id: str
     """推文id"""
-    quoted_status_result: "TweetResult | None" = None
+    quoted_status_result: "TweetRaw | None" = None
     """被引用推文(转发时说话了)"""
-    retweeted_status_result: "TweetResult | None" = None
+    retweeted_status_result: "TweetRaw | None" = None
     """被转发推文(直接转发啥都没说)"""
 
 
-class TweetResult(Struct):
-    result: Tweet
+class TweetData(Struct):
+    """两种结构的兼容层"""
+
+    tweet: Tweet | None = None
+    # 兼容直接就是 Tweet 的情况：core 字段是否存在
+    core: TweetCore | None = None
+    legacy: TweetLegacy | None = None
+    views: Views | None = None
+    rest_id: str | None = None
+    quoted_status_result: "TweetRaw | None" = None
+    retweeted_status_result: "TweetRaw | None" = None
+
+    @property
+    def as_tweet(self) -> Tweet:
+        if self.tweet:
+            return self.tweet
+        # 兼容直接是 Tweet 的情况
+        assert self.core and self.legacy and self.views and self.rest_id, (
+            "TweetData is not a valid Tweet"
+        )
+        return Tweet(
+            core=self.core,
+            legacy=self.legacy,
+            views=self.views,
+            rest_id=self.rest_id,
+            quoted_status_result=self.quoted_status_result,
+            retweeted_status_result=self.retweeted_status_result,
+        )
+
+
+class TweetRaw(Struct):
+    result: TweetData
