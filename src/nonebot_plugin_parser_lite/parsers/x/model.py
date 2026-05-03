@@ -51,7 +51,7 @@ class UserLegacy(Struct):
     followers_count: int
     """粉丝数"""
     profile_image_url_https: str = field(
-        default="https://abs.twimg.com/sticky/default_profile_images/default_profile_bigger.png"
+        default="https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png"
     )
     """头像"""
     profile_banner_url: str = field(default="")
@@ -160,7 +160,7 @@ class Tweet(Struct):
     quoted_status_result: "TweetRaw | None" = None
     """被引用推文(转发时说话了)"""
     retweeted_status_result: "TweetRaw | None" = None
-    """被转发推文(直接转发啥都没说)"""
+    """被转发推文(直接转发啥都没说,正文RT @开头)"""
 
 
 class TweetData(Struct):
