@@ -64,7 +64,7 @@ class XParser(BaseParser):
 
         response = await self.httpx.post(
             "https://easycomment.ai/api/twitter/v1/free/get-tweet-detail",
-            json={"tweet_id": tweet_id},
+            json={"pid": tweet_id},
         )
         response.raise_for_status()
         res = response.json()
