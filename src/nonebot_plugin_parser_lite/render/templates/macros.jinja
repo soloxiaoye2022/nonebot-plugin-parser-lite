@@ -261,7 +261,7 @@
 {# 3. 内容+转发宏（Tailwind 样式 + is_repost） #}
 {% macro render_content(result, is_repost=False) %}
     {% set comments = result.comments %}
-    <div class="{{ 'w-[536px] bg-[#f7f7f7]' if is_repost else 'w-[600px] bg-white' }} overflow-hidden flex flex-col rounded-lg {% if not is_repost %}shadow-lg{% endif %}">
+    <div class="{{ 'w-[535px] bg-[#f7f7f7]' if is_repost else 'w-[600px] bg-white' }} overflow-hidden flex flex-col rounded-lg {% if not is_repost %}shadow-lg{% endif %}">
         {# Header #}
         <div class="px-8 pt-8 pb-2 flex justify-between items-center">
             <div class="flex items-center space-x-3">
