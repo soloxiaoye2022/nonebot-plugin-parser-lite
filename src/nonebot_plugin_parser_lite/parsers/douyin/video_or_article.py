@@ -84,7 +84,7 @@ class VideoData(Struct):
                         "playwm", "play"
                     ),
                     cover_url=self.video.cover.url_list[0],
-                    duration=self.video.duration,
+                    duration=self.video.duration // 1000,
                     video_name=f"{self.aweme_id}.mp4",
                     ext_headers={"Referer": "https://www.douyin.com/"},
                 )
