@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import datetime
 
 from msgspec import Struct, field
@@ -165,9 +167,9 @@ class Tweet(Struct):
     views: Views
     rest_id: str
     """推文id"""
-    quoted_status_result: "TweetRaw | None" = None
+    quoted_status_result: TweetRaw | None = None
     """被引用推文(转发时说话了)"""
-    retweeted_status_result: "TweetRaw | None" = None
+    retweeted_status_result: TweetRaw | None = None
     """被转发推文(直接转发啥都没说,正文RT @开头)"""
 
 
@@ -180,8 +182,8 @@ class TweetData(Struct):
     legacy: TweetLegacy | None = None
     views: Views | None = None
     rest_id: str | None = None
-    quoted_status_result: "TweetRaw | None" = None
-    retweeted_status_result: "TweetRaw | None" = None
+    quoted_status_result: TweetRaw | None = None
+    retweeted_status_result: TweetRaw | None = None
 
     @property
     def as_tweet(self) -> Tweet:
