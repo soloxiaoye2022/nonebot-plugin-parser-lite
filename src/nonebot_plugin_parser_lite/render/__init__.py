@@ -86,7 +86,7 @@ class Renderer:
 
         # 尝试直接发送图片
         msg = UniMessage(image_seg or "图片渲染失败")
-        if self.append_url:
+        if pconfig.append_url:
             urls = (result.display_url, result.repost_display_url)
             msg += "\n".join(url for url in urls if url)
         return msg
@@ -276,10 +276,6 @@ class Renderer:
         # 2.2 原帖节点
         ordered.extend(await build_nodes(repost))
         return ordered
-
-    @property
-    def append_url(self) -> bool:
-        return pconfig.append_url
 
     async def render_image(self, result: ParseResult) -> bytes:
         """使用 HTML 绘制通用社交媒体帖子卡片"""

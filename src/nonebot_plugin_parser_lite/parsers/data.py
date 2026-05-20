@@ -276,7 +276,7 @@ class ParseResult:
 
     @property
     def repost_display_url(self) -> str | None:
-        return f"原帖: {self.repost.url}" if self.repost and self.repost.url else None
+        return f"引帖: {self.repost.url}" if self.repost and self.repost.url else None
 
     async def get_cover_path(self) -> Path | None:
         """获取封面路径"""
