@@ -432,7 +432,7 @@ class Renderer:
         if result.repost:
             data["repost"] = await self.resolve_parse_result(result.repost)
 
-        if pconfig.append_qrcode and result.url:
+        if pconfig.append_qrcode:
             qr = qrcode.QRCode(
                 version=1,
                 error_correction=1,

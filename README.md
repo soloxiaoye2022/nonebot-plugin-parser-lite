@@ -137,6 +137,9 @@ plite_blacklist_users=[]
 # [可选] 是否在解析结果中附加原始URL
 plite_append_url=False
 
+# [可选] 是否在解析结果中添加原始URL二维码
+plite_append_qrcode=False
+
 # [可选] 是否需要转发媒体内容(超过 4 项时始终使用合并转发)
 plite_need_forward_contents=True
 
