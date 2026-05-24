@@ -41,10 +41,6 @@ class StreamDownloader:
         """
         发送 HEAD 请求并返回响应对象。
 
-        对部分站点（如禁止 HEAD 或对 HEAD 做额外校验）会自动回退为 GET，
-        但在回退 GET 时仅获取头部信息，不主动读取响应体，并返回一个“瘦身”的 Response：
-        仅保留 headers / cookies / url / status_code。
-
         :param url: 目标资源地址
         :param ext_headers: 额外请求头
         :return: httpx.Response 对象
@@ -64,7 +60,6 @@ class StreamDownloader:
         async with self.client.stream(
             "GET", url, headers=headers, follow_redirects=True
         ) as stream_resp:
-            stream_resp.raise_for_status()
             slim_resp = Response(
                 status_code=stream_resp.status_code,
                 headers=stream_resp.headers,
