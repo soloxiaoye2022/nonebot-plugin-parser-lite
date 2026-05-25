@@ -180,6 +180,9 @@ class Renderer:
                 )
             except DownloadException:
                 failed_count += 1
+                logger.error(
+                    f"{cont.__class__.__name__} 下载失败:\n{traceback.format_exc()}"
+                )
                 continue
 
         # 2 构建图文 / 图片的转发列表（含主帖 + 转发，按顺序）
@@ -260,7 +263,7 @@ class Renderer:
         if failed_count > 0:
             message = f"{failed_count} 项媒体下载失败"
             yield UniMessage(message)
-            raise DownloadException(message)
+            logger.warning(message)
 
     async def __handle_immediate_media(
         self, cont: MediaContent

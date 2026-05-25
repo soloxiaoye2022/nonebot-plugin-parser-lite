@@ -1063,10 +1063,9 @@ class BilibiliParser(BaseParser):
             )
             response.raise_for_status()
             data = response.json()
-            logger.debug(f"bili评论返回: {data}")
 
             if data.get("code") != 0 or not data.get("data"):
-                logger.debug(
+                logger.warning(
                     f"bili评论返回数据为空或错误: code={data.get('code')}, message={data.get('message')}"  # noqa: E501
                 )
                 return []
