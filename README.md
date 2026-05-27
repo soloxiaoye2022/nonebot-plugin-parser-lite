@@ -182,6 +182,10 @@ plite_forward_text_threshold=300
 
 ## 🎉 致谢
 
+<a href="https://github.com/molanp/nonebot-plugin-parser-lite/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=molanp/nonebot-plugin-parser-lite" />
+</a>
+
 - [nonebot-plugin-resolver](https://github.com/zhiyu1998/nonebot-plugin-resolver) 适用于nonebot2 链接分享解析视频、图片链接/小程序插件，tiktok、bilibili、twitter等实时发送！
 - [nonebot-plugin-parser](https://github.com/fllesser/nonebot-plugin-parser) 社交媒体分享链接解析插件
 - [nonebot-plugin-parser-m](https://github.com/LoCCai/nonebot-plugin-parser-m) 社交媒体分享链接解析插件
