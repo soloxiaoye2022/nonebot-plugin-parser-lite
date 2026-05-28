@@ -33,7 +33,7 @@ class KuWoParser(BaseParser):
         name=PlatformEnum.KUWO, display_name="酷我音乐"
     )
 
-    @handle("kuwo.cn", r"https?://[^\s]*?kuwo\.cn/play_detail/(\d+)")
+    @handle("kuwo.cn", r"https?://[^\s]*?kuwo\.cn/.*play_detail/(\d+)")
     async def _parse_kuwo_share(self, searched: Match[str]):
         """解析酷我音乐分享链接"""
         rid = searched[1]
