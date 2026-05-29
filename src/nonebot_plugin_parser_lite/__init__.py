@@ -25,14 +25,14 @@ __plugin_meta__ = PluginMetadata(
     description="通用媒体链接分享解析",
     usage="发送支持平台的(BV号/链接/小程序/卡片)即可",
     type="application",
-    homepage="https://github.com/molanp/nonebot-plugin-parser-lite",
+    homepage="https://github.com/sokoko-org/nonebot-plugin-parser-lite",
     config=Config,
     supported_adapters=inherit_supported_adapters(
         "nonebot_plugin_alconna", "nonebot_plugin_uninfo"
     ),
     extra={
         "author": "molanp",
-        "homepage": "https://github.com/molanp/nonebot-plugin-parser-lite",
+        "homepage": "https://github.com/sokoko-org/nonebot-plugin-parser-lite",
         "version": "1.2.4",
         "plugin_type": "NORMAL",
     },
