@@ -70,7 +70,7 @@ class Aweme(Struct):
 
     @property
     def content(self) -> list[MediaContent | str]:
-        content: list[MediaContent | str] = [self.detail.desc]
+        content: list[MediaContent | str] = [self.detail.desc.replace("\\n", "\n")]
         for image in self.detail.images:
             if image.livePhotoType == 1 and image.video:
                 content.append(

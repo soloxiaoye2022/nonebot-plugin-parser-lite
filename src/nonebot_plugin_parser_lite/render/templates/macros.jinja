@@ -253,7 +253,7 @@
             {% set _ = flush_images() %}
             {% set src = cont | safe_src("get_cover_path") %}
             {% set _ = html_parts.append(
-                            '<div class="relative rounded-2xl overflow-hidden bg-black aspect-video shadow-md mt-3">'
+                            '<div class="relative rounded-2xl overflow-hidden bg-black shadow-md mt-3">'
                             '<img src="' ~ src ~ '" class="w-full h-full object-cover opacity-80" />'
                             '<div class="absolute inset-0 flex items-center justify-center">'
                             '<div class="w-14 h-14 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 text-white text-xl">'
