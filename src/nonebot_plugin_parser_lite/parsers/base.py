@@ -119,17 +119,31 @@ def handle(
     - pattern 与 params 至少要指定一个（可以同时存在）：
         - 只有 pattern：纯正则匹配，不看 query
         - 只有 params：regex 由 keyword 自动生成为 `https?://<keyword>[^\\s]*`
-        - pattern + params：先用 pattern 过滤，再用 params 解析 URL 后进一步判断
+        - pattern + params：
+            * 先用 pattern 过滤
+            * 若 pattern 没有匹配到末尾或追加 `$`，则自动在末尾补 `[^\\s]*`，以便 MatchWithParams 能看到查询参数部分
+            * 再用 params 解析 URL 后进一步判断
     """  # noqa: E501
 
     if pattern is None and not params:
         raise ValueError("handle: pattern 和 params 至少要指定一个")
 
     # 确定基础 regex：
-    # - 有 pattern 时：使用 pattern 作为完整正则
+    # - 有 pattern 时：使用 pattern 作为基础正则
+    #   * 若同时存在 params 且 pattern 看起来只匹配到 path，则自动扩展以匹配后续 query
     # - 无 pattern 时：使用 keyword 作为 URL 前缀生成正则
+
     if pattern is not None:
         regex = pattern
+        if params:
+            stripped = regex.rstrip()
+            if not (
+                stripped.endswith("$")
+                or stripped.endswith(r"[^\s]*")
+                or stripped.endswith(r"\s*")
+            ):
+                regex = stripped + r"[^\s]*"
+
     else:
         escaped = escape(keyword)
         regex = rf"https?://{escaped}[^\s]*"
