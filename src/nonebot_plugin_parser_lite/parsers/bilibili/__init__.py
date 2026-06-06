@@ -184,12 +184,12 @@ class BilibiliParser(BaseParser):
         url = f"https://{searched.url}"
         return await self.parse_with_redirect(url)
 
-    @handle("BV", r"^(?P<bvid>BV[0-9a-zA-Z]{10})(?:\s)?(?P<page_num>\d{1,3})?$")
     @handle(
         "/BV",
         r"bilibili\.com(?:/video)?/(?P<bvid>BV[0-9A-Za-z]{10})",
         params={"p": {"default": "1", "as_int": True, "required": False}},
     )
+    @handle("BV", r"^(?P<bvid>BV[0-9a-zA-Z]{10})(?:\s)?(?P<p>\d{1,3})?$")
     async def _parse_bv(self, searched: MatchWithParams):
         """解析视频信息"""
         bvid = searched["bvid"]
@@ -197,12 +197,12 @@ class BilibiliParser(BaseParser):
 
         return await self.parse_video(bvid=bvid, page_num=page_num)
 
-    @handle("av", r"^av(?P<avid>\d{6,})(?:\s)?(?P<page_num>\d{1,3})?$")
     @handle(
         "/av",
         r"bilibili\.com(?:/video)?/av(?P<avid>\d{6,})",
         params={"p": {"default": "1", "as_int": True, "required": False}},
     )
+    @handle("av", r"^av(?P<avid>\d{6,})(?:\s)?(?P<p>\d{1,3})?$")
     async def _parse_av(self, searched: MatchWithParams):
         """解析视频信息"""
         avid = int(searched["avid"])

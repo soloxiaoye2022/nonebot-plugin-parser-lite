@@ -149,7 +149,6 @@ class MatchWithParams:
 
     # 兼容原 Match 的常用访问方式
     def __getitem__(self, key):
-        # 优先返回挂载的“虚拟组”
         if isinstance(key, str) and key in self.params:
             return self.params[key]
         return self.match[key]
