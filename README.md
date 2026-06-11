@@ -190,12 +190,11 @@ plite_forward_text_threshold=300
   <img src="https://contrib.rocks/image?repo=sokoko-org/nonebot-plugin-parser-lite" />
 </a>
 
-- [zhiyu1998/nonebot-plugin-resolver](https://github.com/zhiyu1998/nonebot-plugin-resolver) 适用于nonebot2 链接分享解析视频、图片链接/小程序插件，tiktok、bilibili、twitter等实时发送！
 - [fllesser/nonebot-plugin-parser](https://github.com/fllesser/nonebot-plugin-parser) 社交媒体分享链接解析插件
 - [LoCCai/nonebot-plugin-parser-m](https://github.com/LoCCai/nonebot-plugin-parser-m) 社交媒体分享链接解析插件
-- [cv-cat/Spider_XHS](https://github.com/cv-cat/Spider_XHS) 小红书爬虫数据采集，小红书全域运营解决方案
 - [lumina37/aiotieba](https://github.com/lumina37/aiotieba) 贴吧接口合集✨可用于工具箱/吧务管理/数据采集
 - [ikenxuan/karin-plugin-kkk](https://github.com/ikenxuan/karin-plugin-kkk) 给群聊机器人提供视频作品、动态解析和推送功能，并使用 React + Tailwindcss 构建出现代审美设计的信息卡片
 - [ikenxuan/amagi](https://github.com/ikenxuan/amagi) 抖音、B站 web 端相关数据接口封装基于 Node.js 的实现
+- [zly2006/zhihu-plus-plus](https://github.com/zly2006/zhihu-plus-plus) Zhihu++ | 知乎++: Ad-free, low cost, AI powered zhihu android 3rd-party client. 去广告、占用低、AI大模型的新时代知乎安卓端体验
 - [Uesugi Hanako](https://github.com/negichan) 渲染模板设计
 - 致2026年的你们
