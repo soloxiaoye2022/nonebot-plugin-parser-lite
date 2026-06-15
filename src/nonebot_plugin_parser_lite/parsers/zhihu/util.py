@@ -18,7 +18,7 @@ def _quality_rank(q: str) -> int:
     return 1 if q == "SD" else 0
 
 
-async def fetch_video(video_id: str, content_type: str) -> MediaContent | None:
+async def fetch_video(video_id: str, content_type: str):
     res = await DOWNLOADER.client.post(
         "https://www.zhihu.com/api/v4/video/play_info",
         headers=VIDEO_HEADER,
@@ -57,8 +57,26 @@ async def parse_rich_content(html: str, content_type: str) -> list[MediaContent 
     _clean_soup(soup)
 
     result: list[MediaContent | str] = []
+    buffer: list[str] = []
+
     async for item in _iter_media_and_text(soup, content_type):
-        result.append(item)
+        if isinstance(item, str):
+            buffer.append(item)
+        else:
+            if buffer:
+                text_block = "".join(buffer)
+                lines = [line.rstrip() for line in text_block.splitlines()]
+                if normalized := "\n".join(lines).strip():
+                    result.append(normalized)
+                buffer.clear()
+            result.append(item)
+
+    if buffer:
+        text_block = "".join(buffer)
+        lines = [line.rstrip() for line in text_block.splitlines()]
+        if normalized := "\n".join(lines).strip():
+            result.append(normalized)
+
     return result
 
 
@@ -74,9 +92,15 @@ async def _iter_media_and_text(soup: BeautifulSoup, content_type: str):
     这是一个 async 生成器，方便内部按需 await。
     """
     for element in soup.descendants:
-        # 标签节点
         if isinstance(element, Tag):
-            # 视频卡片：整体视为一个单元，处理完后从 DOM 移除以避免重复产出
+            if element.name == "p":
+                yield "\n"
+                continue
+
+            if element.name == "br":
+                yield "\n"
+                continue
+
             if element.name == "a" and "video-box" in (element.get("class") or []):
                 video = await _parse_video_box(element, content_type)
                 if video:
@@ -86,11 +110,9 @@ async def _iter_media_and_text(soup: BeautifulSoup, content_type: str):
                     if text := str(data_name).strip():
                         yield text
 
-                # 从 DOM 树移除该节点及其所有子节点，后续遍历不会再碰到
                 element.decompose()
                 continue
 
-            # 图片
             if element.name == "img":
                 attrs: dict[str, str] = {
                     str(k): str(v[0] if isinstance(v, list) and v else v)
@@ -106,11 +128,12 @@ async def _iter_media_and_text(soup: BeautifulSoup, content_type: str):
                     yield Creator.image(url=src)
 
         elif isinstance(element, NavigableString):
-            if text := str(element).strip():
-                yield f"{text}\n"
+            text = str(element)
+            if text.strip():
+                yield text
 
 
-async def _parse_video_box(tag: Tag, content_type: str) -> MediaContent | None:
+async def _parse_video_box(tag: Tag, content_type: str):
     """
     解析知乎 <a class="video-box">，根据 data-lens-id 拉取视频信息
     """
