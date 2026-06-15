@@ -40,7 +40,7 @@ class ZhiHuParser(BaseParser):
 
         try:
             comment_data = await self.fetch(
-                f"https://www.zhihu.com/api/v4/comment_v5/answers/{answer_id}/root_comment?order_by=score&limit=20&offset=",
+                f"https://www.zhihu.com/api/v4/comment_v5/answers/{answer_id}/root_comment?order_by=score&limit=20",
                 rootCommentDecoder,
                 {
                     "Referer": f"https://www.zhihu.com/question/{question.id}/answer/{answer_id}"

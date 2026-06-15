@@ -4,6 +4,8 @@ from bs4 import BeautifulSoup
 from msgspec import Struct, field
 from msgspec.json import Decoder
 
+from ...creator import Creator
+from ...data import ImageContent
 from ...utils.format import replace_placeholder_to_sticker
 
 ZHIHU_PATTERN = re.compile(r"\[(?P<name>[^]]+)\]")
@@ -48,11 +50,24 @@ class Comment(Struct):
 
     @property
     def content(self):
-        return replace_placeholder_to_sticker(
-            BeautifulSoup(self.raw_content, "html.parser").get_text("\n"),
-            ZHIHU_PATTERN,
-            "zhihu",
-        )
+        """
+        解析评论文本与图片：
+
+        - 文本部分：保留原始文字与表情占位符（例如 `[捂脸]`），并转换为贴纸。
+        - 图片部分：识别 `<a class="comment_img" href="...">` 并提取为图片媒体。
+        """
+        soup = BeautifulSoup(self.raw_content, "html.parser")
+
+        images: list[ImageContent] = []
+        for a in soup.find_all("a", class_="comment_img"):
+            href = a.get("href")
+            if not isinstance(href, str) or not href:
+                continue
+            images.append(Creator.image(href))
+
+        text = soup.get_text()
+        parts = replace_placeholder_to_sticker(text, ZHIHU_PATTERN, "zhihu")
+        return parts + images
 
     @property
     def ip_info(self):
